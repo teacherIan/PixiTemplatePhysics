@@ -1,15 +1,10 @@
 import * as RAPIER from '@dimforge/rapier2d-compat';
 
 export class PhysicsWorld {
-  private ballSize;
   private physicsWorld: RAPIER.World;
-  public spheres: RAPIER.RigidBody[];
   constructor(ballSize: number) {
-    this.ballSize = ballSize;
-    this.spheres = [];
     const gravity = new RAPIER.Vector2(0.0, 9);
     this.physicsWorld = new RAPIER.World(gravity);
-    // this.createPhysicsSphere(window.innerWidth / 4, 0);
     this.createFloor();
     this.createLeftWall();
     this.createRightWall();
@@ -25,8 +20,6 @@ export class PhysicsWorld {
     // setTimeout(() => {
     //   rigidBody.setBodyType(1, true);
     // }, 16000);
-
-    // this.spheres.push(rigidBody as RAPIER.RigidBody);
 
     return rigidBody;
   }

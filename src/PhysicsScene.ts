@@ -46,14 +46,14 @@ export class PhysicsScene extends Container {
     return new TextStyle({
       fill: WorldColors.C,
       fontFamily: 'ArcadeClassic',
-      letterSpacing: 3,
+      letterSpacing: 0,
       fontSize: 35,
     });
   }
 
   private setCounterText() {
     const t = new Text({
-      text: 'OBJECTS: ' + this.counter,
+      text: this.counter,
       style: this.textStyle,
     });
     t.position.set(10, 10);
@@ -115,7 +115,7 @@ export class PhysicsScene extends Container {
   private startInterval() {
     return setInterval(() => {
       let objectsAdded = 2;
-      (this.counterText.text = 'OBJECTS: ' + this.counter),
+      (this.counterText.text = this.counter),
         this.emitBallObject
           ? this.circlePhysicsSpriteFactory(
               Math.random() * 200 + this.emitterLocation,
