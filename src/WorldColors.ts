@@ -1,0 +1,7 @@
+export default {
+  A: 0xffe3a9,
+  B: 0xd96067,
+  C: 0x2a4a55,
+  D: 0x4d9d8b,
+  E: 0xa7dbab,
+};

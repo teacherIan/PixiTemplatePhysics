@@ -1,32 +1,25 @@
-import { Container, Graphics, Assets, TextStyle, Text } from 'pixi.js';
-import { IScene, Manager } from './Manager';
+import { Container, Graphics, Assets, TextStyle, Text, Ticker } from 'pixi.js';
+import { Manager } from './Manager';
 import { manifest } from './Assets';
-import { SceneA } from './SceneA';
 import gsap from 'gsap';
 import * as PIXI from 'pixi.js';
 import { PixiPlugin } from 'gsap/PixiPlugin';
+import { PhysicsScene } from './PhysicsScene';
+import WorldColors from './WorldColors';
 
 gsap.registerPlugin(PixiPlugin);
 PixiPlugin.registerPIXI(PIXI);
 
-export default class LoadingScene extends Container implements IScene {
-  private colors = {
-    darkPurple: '0x291720',
-    byzantium: '0x820263',
-    rose: '0xD90368',
-    orange: 0xfb8b24,
-    darkRed: 0x9a031e,
-  };
-
+export default class LoadingScene extends Container {
   private style = new TextStyle({
-    fill: this.colors.orange,
+    fill: WorldColors.B,
     fontFamily: 'Titan One',
     letterSpacing: 6,
 
     // lineJoin: 'round',
     // miterLimit: 0,
     // strokeThickness: 5,
-    stroke: this.colors.darkRed,
+    stroke: WorldColors.B,
     fontSize: 70,
   });
   private timer: number;
@@ -41,7 +34,6 @@ export default class LoadingScene extends Container implements IScene {
 
   constructor() {
     super();
-
     this.loaded = false;
     this.dots = 0;
     this.timer = 0;
@@ -49,16 +41,16 @@ export default class LoadingScene extends Container implements IScene {
     this.loaderBarBorderLineStyleWidth = 5;
 
     this.loaderBarFill = new Graphics()
-      .roundRect(0, 0, this.loaderBarWidth, 50, 15)
-      .fill(this.colors.orange);
+      .roundRect(0, 0, this.loaderBarWidth, 150, 15)
+      .fill('#ffffff');
     this.loaderBarFill.scale.x = 0;
 
     this.loaderBarBorder = new Graphics();
     this.loaderBarBorder.stroke({
       width: this.loaderBarBorderLineStyleWidth,
-      color: this.colors.darkRed,
+      color: WorldColors.B,
     });
-    this.loaderBarBorder.roundRect(0, 0, this.loaderBarWidth, 50, 15);
+    this.loaderBarBorder.roundRect(0, 0, this.loaderBarWidth, 500, 150);
 
     this.loaderBar = new Container();
     this.loaderBar.addChild(this.loaderBarFill);
@@ -79,8 +71,10 @@ export default class LoadingScene extends Container implements IScene {
       this.text.cursor = 'pointer';
       this.setLayout();
     });
+    this.resize();
+    this.addTicker();
   }
-  resize(): void {
+  private resize(): void {
     this.setLayout();
   }
 
@@ -106,32 +100,32 @@ export default class LoadingScene extends Container implements IScene {
 
   private downloadProgress(progressRatio: number): void {
     this.loaderBarFill.scale.x = progressRatio;
+
+    this.loaderBarFill.tint = WorldColors.B;
   }
 
   private gameLoaded() {
-    console.log('Running game loaded');
     this.loaded = true;
-    console.log(this.loaded);
   }
 
   private buttonClicked() {
-    console.log(this.loaded);
     if (this.loaded) {
-      Manager.changeScene(new SceneA());
+      Manager.changeScene(new PhysicsScene(15));
     }
   }
 
-  update() {
-    console.log('loading scene update');
-    if (this.loaded) this.text.text = 'CLICK TO START';
-    else {
-      this.timer += 1;
-      if (this.timer == 30) {
-        this.dots += 1;
-        this.timer = 0;
+  private addTicker() {
+    Ticker.shared.add(() => {
+      if (this.loaded) this.text.text = 'CLICK TO START';
+      else {
+        this.timer += 1;
+        if (this.timer == 30) {
+          this.dots += 1;
+          this.timer = 0;
+        }
+        let dotsString: string = '.'.repeat(this.dots % 5);
+        this.text.text = 'LOADING' + dotsString;
       }
-      let dotsString: string = '.'.repeat(this.dots % 5);
-      this.text.text = 'LOADING' + dotsString;
-    }
+    });
   }
 }

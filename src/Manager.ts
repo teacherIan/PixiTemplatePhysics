@@ -1,10 +1,11 @@
-import { Application, Container, Ticker } from 'pixi.js';
+import { Application, Container } from 'pixi.js';
+import WorldColors from './WorldColors';
 
 export class Manager {
   private constructor() {}
 
   private static app: Application;
-  private static currentScene: IScene;
+  private static currentScene: Container;
 
   public static get width(): number {
     return Math.max(
@@ -32,21 +33,15 @@ export class Manager {
       view: document.getElementById('app') as HTMLCanvasElement,
       resolution: window.devicePixelRatio || 1,
       autoDensity: true,
-      backgroundColor: 0xffffff,
-      backgroundAlpha: 0,
+      backgroundColor: WorldColors.A,
+      backgroundAlpha: 1,
       powerPreference: 'high-performance',
-      antialias: true,
-      hello: true,
-    });
-
-    window.addEventListener('resize', Manager.resize);
-
-    Ticker.shared.add((ticker) => {
-      Manager.update(ticker.deltaTime);
+      antialias: false,
+      hello: true, //check for webGPU
     });
   }
 
-  public static changeScene(newScene: IScene): void {
+  public static changeScene(newScene: Container): void {
     if (Manager.currentScene) {
       Manager.app.stage.removeChild(Manager.currentScene);
       Manager.currentScene.destroy();
@@ -55,21 +50,4 @@ export class Manager {
     Manager.currentScene = newScene;
     Manager.app.stage.addChild(newScene);
   }
-
-  private static update(framesPassed: number): void {
-    if (Manager.currentScene) {
-      Manager.currentScene.update(framesPassed);
-    }
-  }
-
-  public static resize(): void {
-    if (Manager.currentScene) {
-      Manager.currentScene.resize(Manager.width, Manager.height);
-    }
-  }
-}
-
-export interface IScene extends Container {
-  update(framesPassed: number): void;
-  resize(screenWidth: number, screenHeight: number): void;
 }

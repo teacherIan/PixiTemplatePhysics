@@ -6,6 +6,7 @@ export const manifest: AssetsManifest = {
       name: 'fonts',
       assets: {
         arcade: '/fonts/ArcadeClassic.ttf',
+        arcade_out: '/fonts/8-bit_Arcade_Out.ttf',
       },
     },
     {
@@ -37,6 +38,12 @@ export const manifest: AssetsManifest = {
         planet07: '/orbs/planet07.png',
         planet08: '/orbs/planet08.png',
         planet09: '/orbs/planet09.png',
+      },
+    },
+    {
+      name: 'characters',
+      assets: {
+        red_body_square: '/characters/red_body_square.png',
       },
     },
   ],
