@@ -19,14 +19,14 @@ export class PhysicsWorld {
     const sphere: RAPIER.RigidBodyDesc =
       RAPIER.RigidBodyDesc.dynamic().setTranslation(x, y);
     const rigidBody = this.physicsWorld?.createRigidBody(sphere);
-    const colliderDesc = RAPIER.ColliderDesc.ball(65 * this.ballSize * size);
+    const colliderDesc = RAPIER.ColliderDesc.ball(size / 2);
     const collider = this.physicsWorld.createCollider(colliderDesc, rigidBody);
     collider.setRestitution(0.6);
-    setTimeout(() => {
-      rigidBody.setBodyType(1, true);
-    }, 16000);
+    // setTimeout(() => {
+    //   rigidBody.setBodyType(1, true);
+    // }, 16000);
 
-    this.spheres.push(rigidBody as RAPIER.RigidBody);
+    // this.spheres.push(rigidBody as RAPIER.RigidBody);
 
     return rigidBody;
   }

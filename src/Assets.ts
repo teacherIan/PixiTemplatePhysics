@@ -44,6 +44,7 @@ export const manifest: AssetsManifest = {
       name: 'characters',
       assets: {
         red_body_square: '/characters/red_body_square.png',
+        green_body_circle: '/characters/green_body_circle.png',
       },
     },
   ],

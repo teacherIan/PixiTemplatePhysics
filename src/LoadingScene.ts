@@ -11,17 +11,7 @@ gsap.registerPlugin(PixiPlugin);
 PixiPlugin.registerPIXI(PIXI);
 
 export default class LoadingScene extends Container {
-  private style = new TextStyle({
-    fill: WorldColors.B,
-    fontFamily: 'Titan One',
-    letterSpacing: 6,
-
-    // lineJoin: 'round',
-    // miterLimit: 0,
-    // strokeThickness: 5,
-    stroke: WorldColors.B,
-    fontSize: 70,
-  });
+  private textStyle: TextStyle;
   private timer: number;
   private text: Text;
   private dots: number;
@@ -39,6 +29,13 @@ export default class LoadingScene extends Container {
     this.timer = 0;
     this.loaderBarWidth = Manager.width * 0.8;
     this.loaderBarBorderLineStyleWidth = 5;
+    this.textStyle = new TextStyle({
+      fill: WorldColors.B,
+      fontFamily: 'Titan One',
+      letterSpacing: 6,
+      stroke: WorldColors.B,
+      fontSize: window.innerWidth / 15,
+    });
 
     this.loaderBarFill = new Graphics()
       .roundRect(0, 0, this.loaderBarWidth, 150, 15)
@@ -60,7 +57,7 @@ export default class LoadingScene extends Container {
 
     this.text = new Text({
       text: 'LOADING' + this.dots,
-      style: this.style,
+      style: this.textStyle,
     });
     this.addChild(this.text);
     this.text.on('pointerdown', this.buttonClicked.bind(this));
@@ -80,10 +77,8 @@ export default class LoadingScene extends Container {
 
   private setLayout() {
     this.loaderBar.width = Manager.width;
-
     this.loaderBar.position.x = 0;
     this.loaderBar.position.y = (Manager.height - this.loaderBar.height) / 2;
-
     this.text.position.x = 0;
     (this.text.position.y =
       (Manager.height - this.loaderBar.height) / 2 -
@@ -100,7 +95,6 @@ export default class LoadingScene extends Container {
 
   private downloadProgress(progressRatio: number): void {
     this.loaderBarFill.scale.x = progressRatio;
-
     this.loaderBarFill.tint = WorldColors.B;
   }
 

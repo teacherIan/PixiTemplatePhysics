@@ -4,6 +4,7 @@ import { Container } from 'pixi.js';
 import { PhysicsWorld } from './PhysicsWorld';
 import { Manager } from './Manager';
 import WorldColors from './WorldColors';
+import GUI from 'lil-gui';
 
 interface IPhysicsObject {
   render: Sprite;
@@ -11,54 +12,75 @@ interface IPhysicsObject {
 }
 
 export class PhysicsScene extends Container {
-  private style = new TextStyle({
-    fill: WorldColors.C,
-    fontFamily: 'ArcadeClassic',
-    letterSpacing: 6,
-    padding: 0,
-    fontSize: 20,
-  });
-
+  private textStyle: TextStyle;
+  private emitCubicObject: boolean;
+  private emitBallObject: boolean;
+  private intervalTimeout: number;
+  private GUI = new GUI();
   private counterText: Text;
-
   private physicsWorld: PhysicsWorld;
   private physicsObjects: IPhysicsObject[];
   private objectSize: number;
   private counter: number;
+  private interval: ReturnType<typeof setInterval>;
+  private emitterLocation;
 
   constructor(objectSize: number) {
     super();
-    this.physicsWorld = new PhysicsWorld(objectSize);
-    this.physicsObjects = [];
+    this.emitterLocation = window.innerWidth / 2 - 100;
+    this.emitBallObject = true;
+    this.emitCubicObject = true;
     this.objectSize = objectSize;
+    this.physicsWorld = new PhysicsWorld(this.objectSize);
+    this.physicsObjects = [];
+    this.intervalTimeout = 50;
     this.counter = 0;
-    this.counterText = new Text({
-      text: 'AMT OBJ: ' + this.counter,
-      style: this.style,
-    });
-    this.counterText.position.set(10, 10);
-    this.addChild(this.counterText);
-
-    setInterval(() => {
-      this.counter++;
-      (this.counterText.text = 'AMT OBJ: ' + this.counter),
-        this.createSquareSprite(
-          Math.random() * 200 + window.innerWidth / 2 - 100,
-          -Math.random() * 500
-        );
-    }, 50);
-
+    this.textStyle = this.setTextStyle();
+    this.counterText = this.setCounterText();
     this.createTicker();
+    this.setGUI();
+    this.interval = this.startInterval();
   }
 
-  private createSquareSprite(x: number, y: number) {
+  private setTextStyle() {
+    return new TextStyle({
+      fill: WorldColors.C,
+      fontFamily: 'ArcadeClassic',
+      letterSpacing: 3,
+      fontSize: 35,
+    });
+  }
+
+  private setCounterText() {
+    const t = new Text({
+      text: 'OBJECTS: ' + this.counter,
+      style: this.textStyle,
+    });
+    t.position.set(10, 10);
+    t.zIndex = 100;
+    return this.addChild(t);
+  }
+
+  private circlePhysicsSpriteFactory(x: number, y: number) {
+    const sprite = new Sprite(Texture.from('green_body_circle'));
+    sprite.anchor.set(0.5, 0.5);
+    sprite.position.set(x, y);
+    sprite.width = this.objectSize * Math.random() + 15;
+    sprite.height = sprite.width;
+    this.addChild(sprite);
+    this.physicsObjects.push({
+      render: sprite,
+      physics: this.physicsWorld.createPhysicsSphere(x, y, sprite.width),
+    });
+  }
+
+  private cubicPhysicsSpriteFactory(x: number, y: number) {
     const sprite = new Sprite(Texture.from('red_body_square'));
     sprite.anchor.set(0.5, 0.5);
     sprite.position.set(x, y);
     sprite.width = this.objectSize * Math.random() + 15;
     sprite.height = this.objectSize * Math.random() + 15;
     this.addChild(sprite);
-
     this.physicsObjects.push({
       render: sprite,
       physics: this.physicsWorld.createPhysicsRect(
@@ -82,10 +104,77 @@ export class PhysicsScene extends Container {
   }
 
   private resetWorld() {
+    this.counter = 0;
     this.physicsObjects.forEach((obj) => {
       obj.render.destroy();
     });
     this.physicsWorld = new PhysicsWorld(20);
     this.physicsObjects = [];
+  }
+
+  private startInterval() {
+    return setInterval(() => {
+      let objectsAdded = 2;
+      (this.counterText.text = 'OBJECTS: ' + this.counter),
+        this.emitBallObject
+          ? this.circlePhysicsSpriteFactory(
+              Math.random() * 200 + this.emitterLocation,
+              -Math.random() * 500
+            )
+          : objectsAdded--;
+      this.emitCubicObject
+        ? this.cubicPhysicsSpriteFactory(
+            Math.random() * 200 + this.emitterLocation,
+            -Math.random() * 500
+          )
+        : objectsAdded--;
+      this.counter += objectsAdded;
+    }, this.intervalTimeout);
+  }
+  private setGUI() {
+    const guiOptions = {
+      objectSize: this.objectSize,
+      intervalTimeout: this.intervalTimeout,
+      emitterLocation: this.emitterLocation,
+      emitRect: true,
+      emitBall: true,
+      reset: () => this.resetWorld(),
+    };
+
+    this.GUI.add(guiOptions, 'objectSize', 1, 100, 1);
+    this.GUI.add(guiOptions, 'intervalTimeout', 1, 200, 1);
+    this.GUI.add(guiOptions, 'emitRect');
+    this.GUI.add(guiOptions, 'emitBall');
+
+    this.GUI.add(
+      guiOptions,
+      'emitterLocation',
+      150,
+      window.innerWidth - 250,
+      10
+    );
+    this.GUI.onChange((event) => {
+      switch (event.property) {
+        case 'emitterLocation':
+          this.emitterLocation = event.value;
+          break;
+        case 'objectSize':
+          this.objectSize = event.value;
+          break;
+        case 'emitRect':
+          this.emitCubicObject = event.value;
+          break;
+        case 'emitBall':
+          this.emitBallObject = event.value;
+          break;
+        case 'intervalTimeout': {
+          this.intervalTimeout = event.value;
+          clearInterval(this.interval);
+          this.interval = this.startInterval();
+          break;
+        }
+      }
+    });
+    this.GUI.add(guiOptions, 'reset');
   }
 }
