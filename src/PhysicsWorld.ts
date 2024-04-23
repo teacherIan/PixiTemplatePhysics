@@ -2,7 +2,7 @@ import * as RAPIER from '@dimforge/rapier2d-compat';
 
 export class PhysicsWorld {
   private physicsWorld: RAPIER.World;
-  constructor(ballSize: number) {
+  constructor() {
     const gravity = new RAPIER.Vector2(0.0, 9);
     this.physicsWorld = new RAPIER.World(gravity);
     this.createFloor();
@@ -21,7 +21,23 @@ export class PhysicsWorld {
     //   rigidBody.setBodyType(1, true);
     // }, 16000);
 
-    return rigidBody;
+    return collider;
+  }
+
+  public createStaticPhysicsRect(
+    positionX: number,
+    positionY: number,
+    width: number,
+    height: number
+  ) {
+    const floor: RAPIER.RigidBodyDesc =
+      RAPIER.RigidBodyDesc.fixed().setTranslation(positionX, positionY);
+    const rigidBody = this.physicsWorld.createRigidBody(floor);
+    const colliderDesc = RAPIER.ColliderDesc.cuboid(width / 2, height / 2);
+    const collider = this.physicsWorld.createCollider(colliderDesc, rigidBody);
+    collider.setRestitution(1.1);
+
+    return collider;
   }
 
   public createPhysicsRect(
@@ -32,7 +48,7 @@ export class PhysicsWorld {
   ) {
     const rect: RAPIER.RigidBodyDesc =
       RAPIER.RigidBodyDesc.dynamic().setTranslation(x, y);
-    const rigidBody = this.physicsWorld.createRigidBody(rect);
+    const rigidBody = this.physicsWorld?.createRigidBody(rect);
 
     const colliderDesc = RAPIER.ColliderDesc.cuboid(width / 2, height / 2);
     const collider = this.physicsWorld.createCollider(colliderDesc, rigidBody);
@@ -40,7 +56,7 @@ export class PhysicsWorld {
     // setTimeout(() => {
     //   rigidBody.setBodyType(1, true);
     // }, 20000);
-    return rigidBody;
+    return collider;
   }
 
   private createFloor() {

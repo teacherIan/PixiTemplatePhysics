@@ -1,11 +1,17 @@
 import { Application, Container } from 'pixi.js';
 import WorldColors from './WorldColors';
+import { PerformanceTest } from './scenes/PerformanceTest';
+import { DestroyableObjects } from './scenes/DestroyableObjects';
+import * as RAPIER from '@dimforge/rapier2d-compat';
 
 export class Manager {
   private constructor() {}
 
   private static app: Application;
-  private static currentScene: Container;
+  private static currentScene: IScene;
+  private static sceneIterator: number = 0;
+  private static amtScenes: number = 2;
+  public static started = false;
 
   public static get width(): number {
     return Math.max(
@@ -39,15 +45,50 @@ export class Manager {
       antialias: false,
       hello: true, //check for webGPU
     });
+    window.addEventListener('click', (e) => {
+      const target = e.target as HTMLInputElement;
+      if (this.started && target.id == 'app') {
+        this.changeScene();
+      }
+    });
   }
 
-  public static changeScene(newScene: Container): void {
+  public static changeScene(loadingScene?: IScene): void {
+    const nextScene = this.sceneIterator % this.amtScenes;
+    this.sceneIterator++;
     if (Manager.currentScene) {
       Manager.app.stage.removeChild(Manager.currentScene);
-      Manager.currentScene.destroy();
+      Manager.currentScene.IDestroy();
+      Manager.currentScene.destroy(true);
     }
 
-    Manager.currentScene = newScene;
-    Manager.app.stage.addChild(newScene);
+    if (loadingScene) {
+      Manager.currentScene = loadingScene;
+      Manager.app.stage.addChild(loadingScene);
+      return;
+    }
+    if (!this.started) {
+      this.started = true;
+      return;
+    }
+
+    switch (nextScene) {
+      case 0:
+        Manager.app.stage.addChild(
+          (Manager.currentScene = new PerformanceTest(10))
+        );
+
+        break;
+      case 1:
+        Manager.app.stage.addChild(
+          (Manager.currentScene = new DestroyableObjects(10))
+        );
+
+        break;
+    }
   }
+}
+
+export interface IScene extends Container {
+  IDestroy(): void;
 }

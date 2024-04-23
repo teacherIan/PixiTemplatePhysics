@@ -1,16 +1,16 @@
 import { Container, Graphics, Assets, TextStyle, Text, Ticker } from 'pixi.js';
-import { Manager } from './Manager';
+import { Manager, IScene } from './Manager';
 import { manifest } from './Assets';
 import gsap from 'gsap';
 import * as PIXI from 'pixi.js';
 import { PixiPlugin } from 'gsap/PixiPlugin';
-import { PhysicsScene } from './PhysicsScene';
+import { PerformanceTest } from './scenes/PerformanceTest';
 import WorldColors from './WorldColors';
 
 gsap.registerPlugin(PixiPlugin);
 PixiPlugin.registerPIXI(PIXI);
 
-export default class LoadingScene extends Container {
+export default class LoadingScene extends Container implements IScene {
   private textStyle: TextStyle;
   private timer: number;
   private text: Text;
@@ -71,6 +71,7 @@ export default class LoadingScene extends Container {
     this.resize();
     this.addTicker();
   }
+
   private resize(): void {
     this.setLayout();
   }
@@ -104,7 +105,7 @@ export default class LoadingScene extends Container {
 
   private buttonClicked() {
     if (this.loaded) {
-      Manager.changeScene(new PhysicsScene(15));
+      Manager.changeScene();
     }
   }
 
@@ -122,4 +123,5 @@ export default class LoadingScene extends Container {
       }
     });
   }
+  IDestroy(): void {}
 }

@@ -1,6 +1,6 @@
 import './style.css';
 import Keyboard from './Keyboard';
-import { Manager } from './Manager';
+import { Manager, IScene } from './Manager';
 import LoadingScene from './LoadingScene';
 import * as RAPIER from '@dimforge/rapier2d-compat';
 import { Container } from 'pixi.js';
@@ -9,6 +9,6 @@ import { Container } from 'pixi.js';
 //because RAPIER uses WASM it needs to be loaded before use
 RAPIER.init().then(() => {
   Manager.initialize();
-  const scene: Container = new LoadingScene();
+  const scene: IScene = new LoadingScene();
   Manager.changeScene(scene);
 });

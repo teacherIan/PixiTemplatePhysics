@@ -1,17 +1,17 @@
 import { Sprite, Texture, Ticker, TextStyle, Text } from 'pixi.js';
-import { RigidBody } from '@dimforge/rapier2d-compat';
+import { Collider, RigidBody } from '@dimforge/rapier2d-compat';
 import { Container } from 'pixi.js';
-import { PhysicsWorld } from './PhysicsWorld';
-import { Manager } from './Manager';
-import WorldColors from './WorldColors';
+import { PhysicsWorld } from '../PhysicsWorld';
+import { IScene, Manager } from '../Manager';
+import WorldColors from '../WorldColors';
 import GUI from 'lil-gui';
 
 interface IPhysicsObject {
   render: Sprite;
-  physics: RigidBody;
+  physics: Collider;
 }
 
-export class PhysicsScene extends Container {
+export class PerformanceTest extends Container implements IScene {
   private textStyle: TextStyle;
   private emitCubicObject: boolean;
   private emitBallObject: boolean;
@@ -27,11 +27,12 @@ export class PhysicsScene extends Container {
 
   constructor(objectSize: number) {
     super();
+    this.isRenderGroup = true;
     this.emitterLocation = window.innerWidth / 2 - 100;
     this.emitBallObject = true;
     this.emitCubicObject = true;
     this.objectSize = objectSize;
-    this.physicsWorld = new PhysicsWorld(this.objectSize);
+    this.physicsWorld = new PhysicsWorld();
     this.physicsObjects = [];
     this.intervalTimeout = 50;
     this.counter = 0;
@@ -104,12 +105,7 @@ export class PhysicsScene extends Container {
   }
 
   private resetWorld() {
-    this.counter = 0;
-    this.physicsObjects.forEach((obj) => {
-      obj.render.destroy();
-    });
-    this.physicsWorld = new PhysicsWorld(20);
-    this.physicsObjects = [];
+    Manager.changeScene();
   }
 
   private startInterval() {
@@ -176,5 +172,14 @@ export class PhysicsScene extends Container {
       }
     });
     this.GUI.add(guiOptions, 'reset');
+  }
+
+  IDestroy(): void {
+    this.GUI.destroy();
+    this.counter = 0;
+    this.physicsObjects.forEach((obj) => {
+      obj.render.destroy();
+    });
+    this.physicsObjects = [];
   }
 }
