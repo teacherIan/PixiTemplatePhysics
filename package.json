@@ -17,5 +17,8 @@
     "gsap": "^3.12.5",
     "lil-gui": "^0.19.2",
     "pixi.js": "^8.1.0"
+  },
+  "resolutions": {
+    "rollup": "npm:@rollup/wasm-node"
   }
 }
