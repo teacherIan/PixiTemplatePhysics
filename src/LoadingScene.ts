@@ -71,6 +71,9 @@ export default class LoadingScene extends Container implements IScene {
     this.resize();
     this.addTicker();
   }
+  update(t: Ticker): void {
+    // throw new Error('Method not implemented.');
+  }
 
   private resize(): void {
     this.setLayout();

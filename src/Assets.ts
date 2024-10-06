@@ -41,10 +41,29 @@ export const manifest: AssetsManifest = {
       },
     },
     {
+      name: 'magic',
+      assets: {
+        magic01: 'magic/1.png',
+        magic02: 'magic/2.png',
+        magic03: 'magic/3.png',
+        magic04: 'magic/4.png',
+        magic05: 'magic/5.png',
+        magic06: 'magic/6.png',
+        magic07: 'magic/7.png',
+        magic08: 'magic/8.png',
+      },
+    },
+    {
       name: 'characters',
       assets: {
         red_body_square: '/characters/red_body_square.png',
         green_body_circle: '/characters/green_body_circle.png',
+      },
+    },
+    {
+      name: 'sand',
+      assets: {
+        sand: '/sand/sand.png',
       },
     },
   ],

@@ -1,60 +1,45 @@
-import {
-  Sprite,
-  Texture,
-  Ticker,
-  TextStyle,
-  Text,
-  DestroyOptions,
-} from 'pixi.js';
-import { RigidBody, Collider } from '@dimforge/rapier2d-compat';
+import { Sprite, Texture, Ticker, TextStyle, Text } from 'pixi.js';
+import { Collider } from '@dimforge/rapier2d-compat';
 import { Container } from 'pixi.js';
-import { PhysicsWorld } from '../PhysicsWorld';
 import { IScene, Manager } from '../Manager';
 import WorldColors from '../WorldColors';
 import GUI from 'lil-gui';
 
-interface IPhysicsObject {
-  render: Sprite;
-  physics: Collider;
-}
-
-interface IStaticPhysicsObject {
-  render: Sprite;
-  physics: Collider;
-}
-
 export class DestroyableObjects extends Container implements IScene {
+  private addObjectCountdown: number;
   private textStyle: TextStyle;
   private emitCubicObject: boolean;
   private emitBallObject: boolean;
   private intervalTimeout: number;
   private GUI = new GUI();
   private counterText: Text;
-  private physicsWorld: PhysicsWorld;
-  private physicsObjects: IPhysicsObject[];
-  private staticPhysicObjects: IStaticPhysicsObject[];
   private objectSize: number;
   private counter: number;
-  private interval: ReturnType<typeof setInterval>;
   private emitterLocation;
+  //sprites, physicsObjects,and intervals need to be
+  //explicitly destroyed when ending the scene
+  private dynamicSprites: Array<Sprite>;
+  private staticSprites: Array<Sprite>;
+  private dynamicColliders: Array<Collider>;
+  private staticColliders: Array<Collider>;
 
   constructor(objectSize: number) {
     super();
-    this.isRenderGroup = true;
+    this.addObjectCountdown = 0;
+    this.dynamicColliders = [];
+    this.staticColliders = [];
+    this.dynamicSprites = [];
+    this.staticSprites = [];
     this.emitterLocation = window.innerWidth / 2 - 100;
     this.emitBallObject = true;
     this.emitCubicObject = true;
     this.objectSize = objectSize;
-    this.physicsWorld = new PhysicsWorld();
-    this.physicsObjects = [];
-    this.staticPhysicObjects = [];
     this.intervalTimeout = 1000;
     this.counter = 0;
     this.textStyle = this.setTextStyle();
     this.counterText = this.setCounterText();
-    this.createTicker();
     this.setGUI();
-    this.interval = this.startInterval();
+
     for (let i = 0; i < 42; i++) {
       for (let j = 0; j < 42; j++) {
         let offset = j % 2 == 0 ? window.innerWidth / 80 : 0;
@@ -92,29 +77,31 @@ export class DestroyableObjects extends Container implements IScene {
     sprite.position.set(x, y);
     sprite.width = this.objectSize * Math.random() + 5;
     sprite.height = sprite.width;
+    this.dynamicSprites.push(sprite);
+    this.dynamicColliders.push(
+      Manager.getPhysicsWorld.createPhysicsSphere(x, y, sprite.width)
+    );
     this.addChild(sprite);
-    this.physicsObjects.push({
-      render: sprite,
-      physics: this.physicsWorld.createPhysicsSphere(x, y, sprite.width),
-    });
   }
 
   private cubicStaticPhysicsFactory(x: number, y: number) {
     const sprite = new Sprite(Texture.from('red_body_square'));
+    sprite.tint = Math.random() * 200000;
     sprite.anchor.set(0.5, 0.5);
     sprite.position.set(x, y);
     sprite.width = window.innerWidth / 40;
     sprite.height = window.innerHeight / 40;
-    this.addChild(sprite);
-    this.staticPhysicObjects.push({
-      render: sprite,
-      physics: this.physicsWorld.createStaticPhysicsRect(
+
+    this.staticSprites.push(sprite);
+    this.staticColliders.push(
+      Manager.getPhysicsWorld.createStaticPhysicsRect(
         x,
         y,
         sprite.width,
         sprite.height
-      ),
-    });
+      )
+    );
+    this.addChild(sprite);
   }
 
   private cubicPhysicsSpriteFactory(x: number, y: number) {
@@ -123,64 +110,38 @@ export class DestroyableObjects extends Container implements IScene {
     sprite.position.set(x, y);
     sprite.width = this.objectSize * Math.random() + 5;
     sprite.height = this.objectSize * Math.random() + 5;
-    this.addChild(sprite);
-    this.physicsObjects.push({
-      render: sprite,
-      physics: this.physicsWorld.createPhysicsRect(
+    this.dynamicSprites.push(sprite);
+    this.dynamicColliders.push(
+      Manager.getPhysicsWorld.createPhysicsRect(
         x,
         y,
         sprite.width,
         sprite.height
-      ),
-    });
-  }
-  private createTicker() {
-    Ticker.shared.add((t) => {
-      this.physicsObjects.forEach((obj) => {
-        this.staticPhysicObjects.forEach((staticP) => {
-          this.physicsWorld.World?.contactPair(
-            obj.physics,
-            staticP.physics,
-            () => {
-              staticP.render.alpha = 0;
-              setTimeout(() => {
-                staticP.physics.setEnabled(false);
-              }, 20);
-            }
-          );
-        });
-
-        obj.render.x = obj.physics.translation().x;
-        obj.render.y = obj.physics.translation().y;
-        obj.render.rotation = obj.physics.rotation();
-      });
-      this.physicsWorld.stepWorld(t.deltaTime * 0.2);
-      Manager.getApp.render();
-    });
+      )
+    );
+    this.addChild(sprite);
   }
 
   private resetWorld() {
     Manager.changeScene();
   }
 
-  private startInterval() {
-    return setInterval(() => {
-      let objectsAdded = 2;
-      (this.counterText.text = this.counter),
-        this.emitBallObject
-          ? this.circlePhysicsSpriteFactory(
-              Math.random() * window.innerWidth,
-              -Math.random() * 500
-            )
-          : objectsAdded--;
-      this.emitCubicObject
-        ? this.cubicPhysicsSpriteFactory(
+  private addObject() {
+    let objectsAdded = 2;
+    (this.counterText.text = this.counter),
+      this.emitBallObject
+        ? this.circlePhysicsSpriteFactory(
             Math.random() * window.innerWidth,
             -Math.random() * 500
           )
         : objectsAdded--;
-      this.counter += objectsAdded;
-    }, this.intervalTimeout);
+    this.emitCubicObject
+      ? this.cubicPhysicsSpriteFactory(
+          Math.random() * window.innerWidth,
+          -Math.random() * 500
+        )
+      : objectsAdded--;
+    this.counter += objectsAdded;
   }
   private setGUI() {
     const guiOptions = {
@@ -208,30 +169,62 @@ export class DestroyableObjects extends Container implements IScene {
         case 'emitBall':
           this.emitBallObject = event.value;
           break;
-        case 'intervalTimeout': {
-          this.intervalTimeout = event.value;
-          clearInterval(this.interval);
-          this.interval = this.startInterval();
-          break;
-        }
       }
     });
     this.GUI.add(guiOptions, 'reset');
   }
 
-  IDestroy(): void {
-    this.GUI.destroy();
-    this.counter = 0;
-    this.physicsObjects.forEach((obj) => {
-      obj.render.destroy();
-    });
-    this.staticPhysicObjects.forEach((obj) => {
-      obj.render.destroy();
+  update(t: Ticker): void {
+    this.addObjectCountdown++;
+    if (this.addObjectCountdown > 100) {
+      this.addObjectCountdown = 0;
+      this.addObject();
+    }
+
+    this.dynamicColliders.forEach((dynamicCollider, dynamicColliderIndex) => {
+      //find contacts between static objects and non-static objects
+      this.staticColliders.forEach((staticCollider, staticColliderIndex) => {
+        Manager.getPhysicsWorld.World?.contactPair(
+          staticCollider,
+          dynamicCollider,
+          () => {
+            this.staticSprites[staticColliderIndex].alpha = 0;
+            setTimeout(() => {
+              staticCollider.setEnabled(false);
+            }, 0);
+          }
+        );
+      });
+
+      this.dynamicSprites[dynamicColliderIndex].position =
+        dynamicCollider.translation();
+
+      this.dynamicSprites[dynamicColliderIndex].rotation =
+        dynamicCollider.rotation();
     });
 
-    this.physicsObjects = [];
-    this.staticPhysicObjects = [];
-    this.physicsWorld.World?.free();
-    this.physicsWorld = new PhysicsWorld();
+    Manager.getPhysicsWorld.stepWorld(t.deltaTime * 0.2);
+    Manager.getApp.render();
+  }
+
+  IDestroy(): void {
+    this.GUI.destroy();
+    this.dynamicSprites.forEach((sprite) => {
+      sprite.destroy();
+    });
+    this.staticSprites.forEach((sprite) => {
+      sprite.destroy();
+    });
+
+    this.staticSprites = [];
+    this.dynamicSprites = [];
+    //destroy all object besides walls
+    let b = Manager.getPhysicsWorld.World?.bodies.getAll();
+    b?.forEach((body, index) => {
+      if (index > 2) Manager.getPhysicsWorld.World?.removeRigidBody(body);
+    });
+
+    this.dynamicColliders = [];
+    this.staticColliders = [];
   }
 }

@@ -1,17 +1,25 @@
-import { Application, Container } from 'pixi.js';
+import { Application, Container, Ticker } from 'pixi.js';
 import WorldColors from './WorldColors';
 import { PerformanceTest } from './scenes/PerformanceTest';
 import { DestroyableObjects } from './scenes/DestroyableObjects';
 import * as RAPIER from '@dimforge/rapier2d-compat';
+import { PhysicsWorld } from './PhysicsWorld';
+import { Basic } from './scenes/Basic';
+import { BasicTwo } from './scenes/BasicTwo';
+import Sand from './scenes/Sand';
 
 export class Manager {
   private constructor() {}
-
+  private static physicsWorld: PhysicsWorld;
   private static app: Application;
   private static currentScene: IScene;
   private static sceneIterator: number = 0;
   private static amtScenes: number = 2;
   public static started = false;
+
+  public static get getPhysicsWorld() {
+    return Manager.physicsWorld;
+  }
 
   public static get width(): number {
     return Math.max(
@@ -32,6 +40,7 @@ export class Manager {
   }
 
   public static async initialize(): Promise<void> {
+    Manager.physicsWorld = new PhysicsWorld();
     Manager.app = new Application();
 
     await Manager.app.init({
@@ -39,10 +48,10 @@ export class Manager {
       view: document.getElementById('app') as HTMLCanvasElement,
       resolution: window.devicePixelRatio || 1,
       autoDensity: true,
-      backgroundColor: WorldColors.A,
-      backgroundAlpha: 1,
+      backgroundColor: WorldColors.C,
+      backgroundAlpha: 0.22,
       powerPreference: 'high-performance',
-      antialias: false,
+      antialias: true,
       hello: true, //check for webGPU
     });
     window.addEventListener('click', (e) => {
@@ -51,15 +60,24 @@ export class Manager {
         this.changeScene();
       }
     });
+
+    Manager.app.ticker.add(Manager.update);
+  }
+
+  private static update(t: Ticker) {
+    if (Manager.currentScene) {
+      Manager.currentScene.update(t);
+      Manager.physicsWorld.stepWorld(t.deltaTime * 0.2);
+    }
   }
 
   public static changeScene(loadingScene?: IScene): void {
     const nextScene = this.sceneIterator % this.amtScenes;
     this.sceneIterator++;
     if (Manager.currentScene) {
-      Manager.app.stage.removeChild(Manager.currentScene);
       Manager.currentScene.IDestroy();
-      Manager.currentScene.destroy(true);
+      Manager.app.stage.removeChild(Manager.currentScene);
+      Manager.currentScene.destroy();
     }
 
     if (loadingScene) {
@@ -80,9 +98,10 @@ export class Manager {
 
         break;
       case 1:
-        Manager.app.stage.addChild(
-          (Manager.currentScene = new DestroyableObjects(10))
-        );
+        Manager.app.stage.addChild((Manager.currentScene = new Sand()));
+
+      case 2:
+        Manager.app.stage.addChild((Manager.currentScene = new Sand()));
 
         break;
     }

@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@dimforge/rapier2d-compat@^0.12.0":
-  version "0.12.0"
-  resolved "https://registry.yarnpkg.com/@dimforge/rapier2d-compat/-/rapier2d-compat-0.12.0.tgz#259aaaef44237f82ecb6e1dab3ad289e87a9236c"
-  integrity sha512-7mvskl7Ql3nrrwkrv8fa0spukV1XS6nI42+YG6RW2HNBgxomASXS1Yx+VOH39SFs65OJcx86Ygmxqy1f2T9csw==
+"@dimforge/rapier2d-compat@^0.13.1":
+  version "0.13.1"
+  resolved "https://registry.yarnpkg.com/@dimforge/rapier2d-compat/-/rapier2d-compat-0.13.1.tgz#47fd69baae239d75757823e873165beaaf4865ec"
+  integrity sha512-n8g70IkhhpHHqg+KrRbfCc3rHnRvl2pcWHHwk6tJB/BrwywQhM6zWsBCa2sFVIqCjxv/Ese5qmaxSBICPUo0Sw==
 
 "@esbuild/aix-ppc64@0.20.2":
   version "0.20.2"
@@ -226,10 +226,10 @@ picocolors@^1.0.0:
   resolved "https://registry.yarnpkg.com/picocolors/-/picocolors-1.0.0.tgz#cb5bdc74ff3f51892236eaf79d68bc44564ab81c"
   integrity sha512-1fygroTLlHu66zi26VoTDv8yRgm0Fccecssto+MhsZ0D/DGW2sm8E8AjW7NU5VVTRt5GxbeZ5qBuJr+HyLYkjQ==
 
-pixi.js@^8.1.0:
-  version "8.1.0"
-  resolved "https://registry.yarnpkg.com/pixi.js/-/pixi.js-8.1.0.tgz#c1a6c81993f75bc13882e4570df0d51cc136965b"
-  integrity sha512-qclFipWxKavNZoOE0QjGgEklbxjc1mpHf46adsxYLz7O7RnV44PPkq1J5Ssa6y1JxtYUX0fwbphoE/gz276glA==
+pixi.js@^8.1.1:
+  version "8.1.1"
+  resolved "https://registry.yarnpkg.com/pixi.js/-/pixi.js-8.1.1.tgz#a355b4ee1f7782a708db726bebe678167247f1aa"
+  integrity sha512-/4D1HokubR2TlA/3JdeAb/EsGlkSRt5SmmMiPnsw9QB1PHDdzR7Td1m401fGIjTRq5edl5Zrz29hYXPuVwzdIw==
   dependencies:
     "@pixi/colord" "^2.9.6"
     "@types/css-font-loading-module" "^0.0.12"
@@ -251,9 +251,9 @@ postcss@^8.4.38:
     source-map-js "^1.2.0"
 
 rollup@^4.13.0, "rollup@npm:@rollup/wasm-node":
-  version "4.16.4"
-  resolved "https://registry.yarnpkg.com/@rollup/wasm-node/-/wasm-node-4.16.4.tgz#e4d3da8780e914adda7e488eebd80b58a04b5e99"
-  integrity sha512-/1na873kzeWKlNU0lbXgmhJCTll0gmniDQol2//y2JCE60WGyoSThjiAB8RsZ0yfjLiFfo2uFS6DvWfwzmYbrA==
+  version "4.17.2"
+  resolved "https://registry.yarnpkg.com/@rollup/wasm-node/-/wasm-node-4.17.2.tgz#665af3f269c1a75776020c0975434052a977fa0e"
+  integrity sha512-4F6C3XaUn02XY/GJMQTXncWrLyCkRHdRZe4OyWuQUprWKmU2u+esISOtCYdr3Bp9AqCIo/X3So2Ik7N9dNDwow==
   dependencies:
     "@types/estree" "1.0.5"
   optionalDependencies:
@@ -270,9 +270,9 @@ typescript@^5.4.5:
   integrity sha512-vcI4UpRgg81oIRUFwR0WSIHKt11nJ7SAVlYNIu+QpqeyXP+gpQJy/Z4+F0aGxSE4MqwjyXvW/TzgkLAx2AGHwQ==
 
 vite@^5.2.10:
-  version "5.2.10"
-  resolved "https://registry.yarnpkg.com/vite/-/vite-5.2.10.tgz#2ac927c91e99d51b376a5c73c0e4b059705f5bd7"
-  integrity sha512-PAzgUZbP7msvQvqdSD+ErD5qGnSFiGOoWmV5yAKUEI0kdhjbH6nMWVyZQC/hSc4aXwc0oJ9aEdIiF9Oje0JFCw==
+  version "5.2.11"
+  resolved "https://registry.yarnpkg.com/vite/-/vite-5.2.11.tgz#726ec05555431735853417c3c0bfb36003ca0cbd"
+  integrity sha512-HndV31LWW05i1BLPMUCE1B9E9GFbOu1MbenhS58FuK6owSO5qHm7GiCotrNY1YE5rMeQSFBGmT5ZaLEjFizgiQ==
   dependencies:
     esbuild "^0.20.1"
     postcss "^8.4.38"
