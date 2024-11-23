@@ -44,6 +44,7 @@ export class Manager {
     Manager.app = new Application();
 
     await Manager.app.init({
+      preference: 'webgpu',
       resizeTo: window,
       view: document.getElementById('app') as HTMLCanvasElement,
       resolution: window.devicePixelRatio || 1,
@@ -66,14 +67,14 @@ export class Manager {
 
   private static update(t: Ticker) {
     if (Manager.currentScene) {
-      Manager.currentScene.update(t);
+      // Manager.currentScene.update(t);
       Manager.physicsWorld.stepWorld(t.deltaTime * 0.2);
     }
   }
 
   public static changeScene(loadingScene?: IScene): void {
     const nextScene = this.sceneIterator % this.amtScenes;
-    this.sceneIterator++;
+    // this.sceneIterator++;
     if (Manager.currentScene) {
       Manager.currentScene.IDestroy();
       Manager.app.stage.removeChild(Manager.currentScene);
@@ -97,13 +98,15 @@ export class Manager {
         );
 
         break;
+
       case 1:
-        Manager.app.stage.addChild((Manager.currentScene = new Sand()));
 
-      case 2:
-        Manager.app.stage.addChild((Manager.currentScene = new Sand()));
+      // Manager.app.stage.addChild((Manager.currentScene = new Sand()));
 
-        break;
+      // case 2:
+      //   Manager.app.stage.addChild((Manager.currentScene = new Sand()));
+
+      //   break;
     }
   }
 }

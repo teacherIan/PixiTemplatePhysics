@@ -13,10 +13,10 @@
     "vite": "^5.2.10"
   },
   "dependencies": {
-    "@dimforge/rapier2d-compat": "^0.13.1",
+    "@dimforge/rapier2d-compat": "^0.14.0",
     "gsap": "^3.12.5",
-    "lil-gui": "^0.19.2",
-    "pixi.js": "^8.1.1"
+    "lil-gui": "^0.20.0",
+    "pixi.js": "^8.5.2"
   },
   "resolutions": {
     "rollup": "npm:@rollup/wasm-node"

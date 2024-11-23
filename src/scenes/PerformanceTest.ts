@@ -63,7 +63,7 @@ export class PerformanceTest extends Container implements IScene {
   }
 
   private circlePhysicsSpriteFactory(x: number, y: number) {
-    const sprite = new Sprite(Texture.from('magic02'));
+    const sprite = new Sprite(Texture.from('green_body_circle'));
     sprite.anchor.set(0.5, 0.5);
     sprite.position.set(x, y);
     sprite.width = this.objectSize * Math.random() + 15;

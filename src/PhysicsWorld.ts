@@ -16,7 +16,7 @@ export class PhysicsWorld {
     const rigidBody = this.physicsWorld?.createRigidBody(sphere);
     const colliderDesc = RAPIER.ColliderDesc.ball(size / 2);
     const collider = this.physicsWorld.createCollider(colliderDesc, rigidBody);
-    collider.setRestitution(0.6);
+    collider.setRestitution(0.1);
     // setTimeout(() => {
     //   rigidBody.setBodyType(1, true);
     // }, 16000);
@@ -35,7 +35,7 @@ export class PhysicsWorld {
     const rigidBody = this.physicsWorld.createRigidBody(floor);
     const colliderDesc = RAPIER.ColliderDesc.cuboid(width / 2, height / 2);
     const collider = this.physicsWorld.createCollider(colliderDesc, rigidBody);
-    collider.setRestitution(1.1);
+    collider.setRestitution(0.1);
 
     return collider;
   }
@@ -52,7 +52,7 @@ export class PhysicsWorld {
 
     const colliderDesc = RAPIER.ColliderDesc.cuboid(width / 2, height / 2);
     const collider = this.physicsWorld.createCollider(colliderDesc, rigidBody);
-    collider.setRestitution(0.6);
+    collider.setRestitution(0.1);
     // setTimeout(() => {
     //   rigidBody.setBodyType(1, true);
     // }, 20000);
