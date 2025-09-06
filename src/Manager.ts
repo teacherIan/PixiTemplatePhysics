@@ -67,8 +67,8 @@ export class Manager {
 
   private static update(t: Ticker) {
     if (Manager.currentScene) {
-      // Manager.currentScene.update(t);
-      Manager.physicsWorld.stepWorld(t.deltaTime * 0.2);
+      Manager.currentScene.update(t);
+      Manager.physicsWorld.stepWorld(t.deltaMS / 10000);
     }
   }
 
@@ -76,10 +76,7 @@ export class Manager {
     const nextScene = this.sceneIterator % this.amtScenes;
     this.sceneIterator++;
 
-    console.log(
-      `Changing to scene ${nextScene}, bodies before cleanup:`,
-      Manager.physicsWorld?.World?.bodies?.len || 0
-    );
+
 
     if (Manager.currentScene) {
       Manager.currentScene.IDestroy();
@@ -93,10 +90,6 @@ export class Manager {
 
     Manager.physicsWorld = new PhysicsWorld();
 
-    console.log(
-      `Bodies after cleanup:`,
-      Manager.physicsWorld?.World?.bodies?.len || 0
-    );
 
     if (loadingScene) {
       Manager.currentScene = loadingScene;
@@ -124,5 +117,6 @@ export class Manager {
 }
 
 export interface IScene extends Container {
+  update(t: Ticker): void;
   IDestroy(): void;
 }

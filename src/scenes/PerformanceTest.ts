@@ -24,7 +24,7 @@ export class PerformanceTest extends Container implements IScene {
   private counter: number;
   private interval: ReturnType<typeof setInterval>;
   private emitterLocation;
-  private tickerFunction: ((t: Ticker) => void) | undefined;
+  
 
   constructor(objectSize: number) {
     super();
@@ -39,7 +39,6 @@ export class PerformanceTest extends Container implements IScene {
     this.counter = 0;
     this.textStyle = this.setTextStyle();
     this.counterText = this.setCounterText();
-    this.createTicker();
     this.setGUI();
     this.interval = this.startInterval();
   }
@@ -93,17 +92,12 @@ export class PerformanceTest extends Container implements IScene {
       ),
     });
   }
-  private createTicker() {
-    this.tickerFunction = (t) => {
-      this.physicsObjects.forEach((obj) => {
-        obj.render.x = obj.physics.translation().x;
-        obj.render.y = obj.physics.translation().y;
-        obj.render.rotation = obj.physics.rotation();
-      });
-      // Remove physics stepping - Manager handles this
-      Manager.getApp.render();
-    };
-    Ticker.shared.add(this.tickerFunction);
+  update(t: Ticker): void {
+    this.physicsObjects.forEach((obj) => {
+      const translation = obj.physics.translation();
+      obj.render.position.set(translation.x, translation.y);
+      obj.render.rotation = obj.physics.rotation();
+    });
   }
 
   private resetWorld() {
@@ -180,11 +174,6 @@ export class PerformanceTest extends Container implements IScene {
     // Clear the interval first
     if (this.interval) {
       clearInterval(this.interval);
-    }
-
-    // Remove ticker function
-    if (this.tickerFunction) {
-      Ticker.shared.remove(this.tickerFunction);
     }
 
     // Destroy GUI

@@ -6,6 +6,7 @@ import * as PIXI from 'pixi.js';
 import { PixiPlugin } from 'gsap/PixiPlugin';
 import { PerformanceTest } from './scenes/PerformanceTest';
 import WorldColors from './WorldColors';
+import { BlurFilter, ColorMatrixFilter } from 'pixi.js';
 
 gsap.registerPlugin(PixiPlugin);
 PixiPlugin.registerPIXI(PIXI);
@@ -20,20 +21,60 @@ export default class LoadingScene extends Container implements IScene {
   private loaderBarFill: Graphics;
   private loaded: boolean;
   private loaderBarWidth: number;
-  private loaderBarBorderLineStyleWidth;
+  private loaderBarBorderLineStyleWidth: number;
+  //game world
+  private snakeWorld: Container;
+  private food: Graphics;
+  private gameElementWidthHeight: number;
+  private devBackground: Graphics;
+  private snakeGridSize: number;
 
   constructor() {
     super();
+    //snake world
+    
+    this.gameElementWidthHeight = window.innerWidth > window.innerHeight ? window.innerHeight : window.innerWidth;
+    this.snakeGridSize = this.gameElementWidthHeight / 20;
+    this.snakeWorld = new Container();
+
+    this.centerSnakeWorld();
+
+    this.devBackground = new Graphics()
+      .rect(0, 0, this.gameElementWidthHeight, this.gameElementWidthHeight)
+    //  // .fill("#505050");
+    
+    this.snakeWorld.addChild(this.devBackground);
+    this.addChild(this.snakeWorld);
+
+    // create snake food
+    this.food = new Graphics()
+      .roundRect(
+        this.snakeGridSize * Math.floor(Math.random() * 20),
+        this.snakeGridSize * Math.floor(Math.random() * 20),
+        this.snakeGridSize,
+        this.snakeGridSize,
+        10
+      )
+      .fill(WorldColors.C);
+
+    this.snakeWorld.addChild(this.food);
+
+
+    //UI Elements
+
     this.loaded = false;
     this.dots = 0;
     this.timer = 0;
     this.loaderBarWidth = Manager.width * 0.8;
     this.loaderBarBorderLineStyleWidth = 5;
     this.textStyle = new TextStyle({
-      fill: WorldColors.B,
+      fill: 'transparent',
       fontFamily: 'Titan One',
       letterSpacing: 6,
-      stroke: WorldColors.B,
+      stroke: {
+           color: WorldColors.B,  
+           width: 4
+      }, 
       fontSize: window.innerWidth / 15,
     });
 
@@ -53,12 +94,15 @@ export default class LoadingScene extends Container implements IScene {
     this.loaderBar.addChild(this.loaderBarFill);
     this.loaderBar.addChild(this.loaderBarBorder);
 
-    this.addChild(this.loaderBar);
+    
+
+    // this.addChild(this.loaderBar);
 
     this.text = new Text({
       text: 'LOADING' + this.dots,
       style: this.textStyle,
     });
+    
     this.addChild(this.text);
     this.text.on('pointerdown', this.buttonClicked.bind(this));
 
@@ -71,8 +115,21 @@ export default class LoadingScene extends Container implements IScene {
     this.resize();
     this.addTicker();
   }
+
   update(t: Ticker): void {
-    // throw new Error('Method not implemented.');
+    // Implementation not needed for this scene
+  }
+
+  private centerSnakeWorld(): void {
+    const isLandscape = window.innerWidth > window.innerHeight;
+    
+    if (isLandscape) {
+      // Center horizontally, align to top
+      this.snakeWorld.position.set((Manager.width - this.gameElementWidthHeight) / 2, 0);
+    } else {
+      // Center vertically, align to left
+      this.snakeWorld.position.set(0, (Manager.height - this.gameElementWidthHeight) / 2);
+    }
   }
 
   private resize(): void {
@@ -83,12 +140,10 @@ export default class LoadingScene extends Container implements IScene {
     this.loaderBar.width = Manager.width;
     this.loaderBar.position.x = 0;
     this.loaderBar.position.y = (Manager.height - this.loaderBar.height) / 2;
+    this.loaderBar.alpha = 0.85; // Semi-transparent for glass effect
     this.text.position.x = 0;
-    (this.text.position.y =
-      (Manager.height - this.loaderBar.height) / 2 -
-      this.text.height -
-      this.loaderBarBorderLineStyleWidth / 2),
-      (this.text.alpha = 1);
+    this.text.position.y = 0;
+    this.text.alpha = 0.85; // Semi-transparent for glass effect
   }
 
   private async initializeLoader(): Promise<void> {
@@ -114,7 +169,7 @@ export default class LoadingScene extends Container implements IScene {
 
   private addTicker() {
     Ticker.shared.add(() => {
-      if (this.loaded) this.text.text = 'CLICK TO START';
+      if (this.loaded) this.text.text = 'PIXI.JS \nRAPIER.JS';
       else {
         this.timer += 1;
         if (this.timer == 30) {
@@ -126,5 +181,8 @@ export default class LoadingScene extends Container implements IScene {
       }
     });
   }
-  IDestroy(): void {}
+
+  IDestroy(): void {
+    // Clean up any resources if needed
+  }
 }

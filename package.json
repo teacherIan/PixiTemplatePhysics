@@ -9,14 +9,14 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "typescript": "^5.4.5",
-    "vite": "^5.2.10"
+    "typescript": "^5.9.2",
+    "vite": "^7.1.4"
   },
   "dependencies": {
-    "@dimforge/rapier2d-compat": "^0.18.2",
-    "gsap": "^3.12.5",
+    "@dimforge/rapier2d-compat": "^0.19.0",
+    "gsap": "^3.13",
     "lil-gui": "^0.20.0",
-    "pixi.js": "^8.5.2"
+    "pixi.js": "^8.13.1"
   },
   "resolutions": {
     "rollup": "npm:@rollup/wasm-node"

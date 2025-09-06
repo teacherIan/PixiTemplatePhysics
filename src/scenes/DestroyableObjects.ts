@@ -203,7 +203,8 @@ export class DestroyableObjects extends Container implements IScene {
         dynamicCollider.rotation();
     });
 
-    Manager.getPhysicsWorld.stepWorld(t.deltaTime * 0.2);
+    // Physics stepping is handled by Manager.update(), don't duplicate it here
+    // Manager.getPhysicsWorld.stepWorld(t.deltaTime * 0.2);
     Manager.getApp.render();
   }
 
