@@ -74,12 +74,29 @@ export class Manager {
 
   public static changeScene(loadingScene?: IScene): void {
     const nextScene = this.sceneIterator % this.amtScenes;
-    // this.sceneIterator++;
+    this.sceneIterator++;
+
+    console.log(
+      `Changing to scene ${nextScene}, bodies before cleanup:`,
+      Manager.physicsWorld?.World?.bodies?.len || 0
+    );
+
     if (Manager.currentScene) {
       Manager.currentScene.IDestroy();
       Manager.app.stage.removeChild(Manager.currentScene);
       Manager.currentScene.destroy();
     }
+
+    if (Manager.physicsWorld) {
+      Manager.physicsWorld.destroy();
+    }
+
+    Manager.physicsWorld = new PhysicsWorld();
+
+    console.log(
+      `Bodies after cleanup:`,
+      Manager.physicsWorld?.World?.bodies?.len || 0
+    );
 
     if (loadingScene) {
       Manager.currentScene = loadingScene;
@@ -100,13 +117,8 @@ export class Manager {
         break;
 
       case 1:
-
-      // Manager.app.stage.addChild((Manager.currentScene = new Sand()));
-
-      // case 2:
-      //   Manager.app.stage.addChild((Manager.currentScene = new Sand()));
-
-      //   break;
+        Manager.app.stage.addChild((Manager.currentScene = new Sand()));
+        break;
     }
   }
 }

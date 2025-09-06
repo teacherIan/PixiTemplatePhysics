@@ -66,8 +66,7 @@ export class PhysicsWorld {
         window.innerHeight + 100
       );
     const rigidBody = this.physicsWorld.createRigidBody(floor);
-    rigidBody.userData = 1;
-    console.log(rigidBody.userData);
+
     const colliderDesc = RAPIER.ColliderDesc.cuboid(window.innerWidth, 100);
     const collider = this.physicsWorld.createCollider(colliderDesc, rigidBody);
   }
@@ -76,7 +75,7 @@ export class PhysicsWorld {
     const floor: RAPIER.RigidBodyDesc =
       RAPIER.RigidBodyDesc.fixed().setTranslation(-5, window.innerHeight / 2);
     const rigidBody = this.physicsWorld.createRigidBody(floor);
-    rigidBody.userData = 1;
+
     const colliderDesc = RAPIER.ColliderDesc.cuboid(5, window.innerHeight * 5);
     const collider = this.physicsWorld.createCollider(colliderDesc, rigidBody);
   }
@@ -88,7 +87,7 @@ export class PhysicsWorld {
         window.innerHeight / 2
       );
     const rigidBody = this.physicsWorld.createRigidBody(floor);
-    rigidBody.userData = 1;
+
     const colliderDesc = RAPIER.ColliderDesc.cuboid(10, window.innerHeight * 5);
     const collider = this.physicsWorld.createCollider(colliderDesc, rigidBody);
   }
@@ -100,5 +99,21 @@ export class PhysicsWorld {
 
   public get World(): RAPIER.World | undefined {
     return this.physicsWorld;
+  }
+
+  public destroy() {
+    if (this.physicsWorld) {
+      this.physicsWorld.forEachCollider((collider) => {
+        this.physicsWorld.removeCollider(collider, true);
+      });
+
+      this.physicsWorld.forEachRigidBody((body) => {
+        this.physicsWorld.removeRigidBody(body);
+      });
+
+      this.physicsWorld.free();
+
+      this.physicsWorld = null as any;
+    }
   }
 }

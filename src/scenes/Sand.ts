@@ -7,16 +7,18 @@ export default class Sand extends Container implements IScene {
   private sprites: Array<Sprite>;
   private colliders: Array<Collider>;
   private objectSize: number;
+  private tickerFunction: ((t: Ticker) => void) | undefined;
+
   constructor() {
     super();
     this.objectSize = 35;
     this.sprites = [];
     this.colliders = [];
 
-    for (let i = 0; i < 3000; i++) {
+    for (let i = 0; i < 1000; i++) {
       this.circlePhysicsSpriteFactory(
         Math.random() * window.innerWidth,
-        Math.random() * -2000
+        Math.random() * -1000 // Reduced spawn height
       );
     }
 
@@ -24,6 +26,8 @@ export default class Sand extends Container implements IScene {
       collider.setRestitution(0);
       collider.setFriction(0.8);
     });
+
+    this.createTicker();
   }
 
   private circlePhysicsSpriteFactory(x: number, y: number) {
@@ -40,11 +44,31 @@ export default class Sand extends Container implements IScene {
     this.addChild(sprite);
   }
 
-  IDestroy(): void {}
-  update(t: Ticker): void {
-    this.sprites.forEach((sprite, index) => {
-      sprite.position = this.colliders[index].translation();
-      sprite.rotation = this.colliders[index].rotation();
+  private createTicker() {
+    this.tickerFunction = (t) => {
+      this.sprites.forEach((sprite, index) => {
+        sprite.position = this.colliders[index].translation();
+        sprite.rotation = this.colliders[index].rotation();
+      });
+    };
+    Ticker.shared.add(this.tickerFunction);
+  }
+
+  IDestroy(): void {
+    // Remove ticker function
+    if (this.tickerFunction) {
+      Ticker.shared.remove(this.tickerFunction);
+    }
+
+    // Destroy all sprites
+    this.sprites.forEach((sprite) => {
+      sprite.destroy();
     });
+    this.sprites = [];
+    this.colliders = [];
+  }
+
+  update(t: Ticker): void {
+    // This method is kept for compatibility but not used since we use ticker directly
   }
 }
