@@ -4,9 +4,10 @@ import { manifest } from './Assets';
 import gsap from 'gsap';
 import * as PIXI from 'pixi.js';
 import { PixiPlugin } from 'gsap/PixiPlugin';
-import { PerformanceTest } from './scenes/PerformanceTest';
+
 import WorldColors from './WorldColors';
-import { BlurFilter, ColorMatrixFilter } from 'pixi.js';
+import SnakeWorld from './scenes/SnakeWorld';
+
 
 gsap.registerPlugin(PixiPlugin);
 PixiPlugin.registerPIXI(PIXI);
@@ -22,61 +23,15 @@ export default class LoadingScene extends Container implements IScene {
   private loaded: boolean;
   private loaderBarWidth: number;
   private loaderBarBorderLineStyleWidth: number;
+  private snakeWorld: SnakeWorld
   //game world
-  private snakeWorld: Container;
-  private food: Graphics;
-  private gameElementWidthHeight: number;
-  private devBackground: Graphics;
-  private snakeGridSize: number;
-  private snake: Graphics;
+
 
   constructor() {
     super();
-    //snake world
-
-    this.gameElementWidthHeight =
-      window.innerWidth > window.innerHeight
-        ? window.innerHeight
-        : window.innerWidth;
-    this.snakeGridSize = this.gameElementWidthHeight / 20;
-    this.snakeWorld = new Container();
-
-    this.centerSnakeWorld();
-
-    this.devBackground = new Graphics().rect(
-      0,
-      0,
-      this.gameElementWidthHeight,
-      this.gameElementWidthHeight
-    );
-
-    this.snakeWorld.addChild(this.devBackground);
-    this.addChild(this.snakeWorld);
-
-    // create snake food
-    this.food = new Graphics()
-      .roundRect(
-        this.snakeGridSize * Math.floor(Math.random() * 20),
-        this.snakeGridSize * Math.floor(Math.random() * 20),
-        this.snakeGridSize,
-        this.snakeGridSize,
-        10
-      )
-      .fill(WorldColors.C);
-
-    this.snakeWorld.addChild(this.food);
-
-    this.snake = new Graphics()
-      .roundRect(
-        this.snakeGridSize * Math.floor(Math.random() * 20),
-        this.snakeGridSize * Math.floor(Math.random() * 20),
-        this.snakeGridSize,
-        this.snakeGridSize,
-        10
-      )
-      .fill(WorldColors.B);
-
-    this.snakeWorld.addChild(this.snake);
+    
+    this.snakeWorld = new SnakeWorld()
+    this.addChild(this.snakeWorld)
 
     //UI Elements
 
@@ -136,23 +91,7 @@ export default class LoadingScene extends Container implements IScene {
     // Implementation not needed for this scene
   }
 
-  private centerSnakeWorld(): void {
-    const isLandscape = window.innerWidth > window.innerHeight;
 
-    if (isLandscape) {
-      // Center horizontally, align to top
-      this.snakeWorld.position.set(
-        (Manager.width - this.gameElementWidthHeight) / 2,
-        0
-      );
-    } else {
-      // Center vertically, align to left
-      this.snakeWorld.position.set(
-        0,
-        (Manager.height - this.gameElementWidthHeight) / 2
-      );
-    }
-  }
 
   private resize(): void {
     this.setLayout();
@@ -191,23 +130,21 @@ export default class LoadingScene extends Container implements IScene {
 
   private addTicker() {
     Ticker.shared.add(() => {
-      if (this.loaded) this.text.text = 'PIXI.JS \nRAPIER.JS';
-      else {
+      if (this.loaded) this.text.text = 'PIXI.JS\nRAPIER.JS';
+      
         this.timer += 1;
-        if (this.timer == 30) {
+        if (this.timer == 10) {
           this.dots += 1;
           this.timer = 0;
 
-          this.snake.position.set(
-            this.snake.position.x + 5,
-            this.snake.position.y
-          );
+          this.snakeWorld.update()
+
         }
         let dotsString: string = '.'.repeat(this.dots % 5);
         this.text.text = 'LOADING' + dotsString;
       }
-    });
-  }
+  )}
+  
 
   IDestroy(): void {
     // Clean up any resources if needed
