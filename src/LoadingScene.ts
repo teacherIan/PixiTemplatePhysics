@@ -28,21 +28,28 @@ export default class LoadingScene extends Container implements IScene {
   private gameElementWidthHeight: number;
   private devBackground: Graphics;
   private snakeGridSize: number;
+  private snake: Graphics;
 
   constructor() {
     super();
     //snake world
-    
-    this.gameElementWidthHeight = window.innerWidth > window.innerHeight ? window.innerHeight : window.innerWidth;
+
+    this.gameElementWidthHeight =
+      window.innerWidth > window.innerHeight
+        ? window.innerHeight
+        : window.innerWidth;
     this.snakeGridSize = this.gameElementWidthHeight / 20;
     this.snakeWorld = new Container();
 
     this.centerSnakeWorld();
 
-    this.devBackground = new Graphics()
-      .rect(0, 0, this.gameElementWidthHeight, this.gameElementWidthHeight)
-    //  // .fill("#505050");
-    
+    this.devBackground = new Graphics().rect(
+      0,
+      0,
+      this.gameElementWidthHeight,
+      this.gameElementWidthHeight
+    );
+
     this.snakeWorld.addChild(this.devBackground);
     this.addChild(this.snakeWorld);
 
@@ -59,6 +66,17 @@ export default class LoadingScene extends Container implements IScene {
 
     this.snakeWorld.addChild(this.food);
 
+    this.snake = new Graphics()
+      .roundRect(
+        this.snakeGridSize * Math.floor(Math.random() * 20),
+        this.snakeGridSize * Math.floor(Math.random() * 20),
+        this.snakeGridSize,
+        this.snakeGridSize,
+        10
+      )
+      .fill(WorldColors.B);
+
+    this.snakeWorld.addChild(this.snake);
 
     //UI Elements
 
@@ -72,9 +90,9 @@ export default class LoadingScene extends Container implements IScene {
       fontFamily: 'Titan One',
       letterSpacing: 6,
       stroke: {
-           color: WorldColors.B,  
-           width: 4
-      }, 
+        color: WorldColors.B,
+        width: 4,
+      },
       fontSize: window.innerWidth / 15,
     });
 
@@ -94,15 +112,13 @@ export default class LoadingScene extends Container implements IScene {
     this.loaderBar.addChild(this.loaderBarFill);
     this.loaderBar.addChild(this.loaderBarBorder);
 
-    
-
     // this.addChild(this.loaderBar);
 
     this.text = new Text({
       text: 'LOADING' + this.dots,
       style: this.textStyle,
     });
-    
+
     this.addChild(this.text);
     this.text.on('pointerdown', this.buttonClicked.bind(this));
 
@@ -122,13 +138,19 @@ export default class LoadingScene extends Container implements IScene {
 
   private centerSnakeWorld(): void {
     const isLandscape = window.innerWidth > window.innerHeight;
-    
+
     if (isLandscape) {
       // Center horizontally, align to top
-      this.snakeWorld.position.set((Manager.width - this.gameElementWidthHeight) / 2, 0);
+      this.snakeWorld.position.set(
+        (Manager.width - this.gameElementWidthHeight) / 2,
+        0
+      );
     } else {
       // Center vertically, align to left
-      this.snakeWorld.position.set(0, (Manager.height - this.gameElementWidthHeight) / 2);
+      this.snakeWorld.position.set(
+        0,
+        (Manager.height - this.gameElementWidthHeight) / 2
+      );
     }
   }
 
@@ -175,6 +197,11 @@ export default class LoadingScene extends Container implements IScene {
         if (this.timer == 30) {
           this.dots += 1;
           this.timer = 0;
+
+          this.snake.position.set(
+            this.snake.position.x + 5,
+            this.snake.position.y
+          );
         }
         let dotsString: string = '.'.repeat(this.dots % 5);
         this.text.text = 'LOADING' + dotsString;
