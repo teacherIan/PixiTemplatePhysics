@@ -1,9 +1,10 @@
-import { Container, Graphics } from "pixi.js";
-import WorldColors from "../WorldColors";
-import { Manager } from "../Manager";
+import { Container, Graphics } from 'pixi.js';
+import WorldColors from '../WorldColors';
+import { Manager } from '../Manager';
 
-interface Location { // grid coordinate ( will be multiplied by grid size)
-  x: number; 
+interface Location {
+  // grid coordinate ( will be multiplied by grid size)
+  x: number;
   y: number;
 }
 
@@ -21,44 +22,54 @@ enum Direction {
 
 export default class SnakeWorld extends Container {
   private food: GridEntity;
-  private GridEntityWidthHeight: number;
-  private devBackground: Graphics;
-  private snakeGridSize: number;
-  private _snake: GridEntity[] = [];
-  private _currentDirection: Direction;
-  private _snakeHeadLocation: Location;
-  private _gridDivision: number = 20
+  private gameAreaSize: number;
+  // private devBackground: Graphics;
+  private cellSize: number;
+  private snake: GridEntity[] = [];
+  private currentDirection: Direction;
+  private snakeHeadLocation: Location;
+  private gridDivision: number = 20;
 
   constructor() {
     super();
-    this._snakeHeadLocation = {
+    this.snakeHeadLocation = {
       x: this.getRandomGridLocation(),
       y: this.getRandomGridLocation(),
     };
-    this._currentDirection = this.getRandomDirection();
-    this._snake.push(
-      this.updateSnakeArray(this._snakeHeadLocation, this._currentDirection)
+    this.currentDirection = this.getRandomDirection();
+    this.snake.push(
+      this.updateSnakeArray(this.snakeHeadLocation, this.currentDirection)
     );
 
-    this.GridEntityWidthHeight =
+    this.gameAreaSize =
       window.innerWidth > window.innerHeight
         ? window.innerHeight
         : window.innerWidth;
-    this.snakeGridSize = this.GridEntityWidthHeight / this._gridDivision;
+    this.cellSize = this.gameAreaSize / this.gridDivision;
 
-    this.devBackground = new Graphics().rect(
-      0,
-      0,
-      this.GridEntityWidthHeight,
-      this.GridEntityWidthHeight
-    );
+    // this.devBackground = new Graphics().rect(
+    //   0,
+    //   0,
+    //   this.gameAreaSize,
+    //   this.gameAreaSize
+    // );
+
+    // this.addChild(this.devBackground);
 
     this.centerWorld();
-
-    this.addChild(this.devBackground);
-
     this.food = this.updateFood();
-    // this.addChild(this.food.Graphic);
+  }
+
+  private centerWorld(): void {
+    const isLandscape = window.innerWidth > window.innerHeight;
+
+    if (isLandscape) {
+      // Center horizontally, align to top
+      this.position.set((Manager.width - this.gameAreaSize) / 2, 0);
+    } else {
+      // Center vertically, align to left
+      this.position.set(0, (Manager.height - this.gameAreaSize) / 2);
+    }
   }
 
   private gameElementGraphicFactory(
@@ -67,115 +78,105 @@ export default class SnakeWorld extends Container {
     y?: number
   ): Graphics {
     const fill = isFood ? WorldColors.C : WorldColors.B;
-    let gridX = x ?? this.getRandomGridLocation() 
-    let gridY = y ?? this.getRandomGridLocation()
-     
+    let gridX = x ?? this.getRandomGridLocation();
+    let gridY = y ?? this.getRandomGridLocation();
+
     const graphic = new Graphics()
       .roundRect(
-        gridX * this.snakeGridSize,
-        gridY * this.snakeGridSize,
-        this.snakeGridSize,
-        this.snakeGridSize,
+        gridX * this.cellSize,
+        gridY * this.cellSize,
+        this.cellSize,
+        this.cellSize,
         10
       )
 
       .fill(fill);
-      this.addChild(graphic)
-      return graphic
-      
+    this.addChild(graphic);
+    return graphic;
   }
 
   private updateFood(): GridEntity {
     const x = this.getRandomGridLocation();
     const y = this.getRandomGridLocation();
 
-    const graphic = this.gameElementGraphicFactory(true, x,y);
+    const graphic = this.gameElementGraphicFactory(true, x, y);
     const gridEntity: GridEntity = { Location: { x, y }, Graphic: graphic };
-    
 
     return gridEntity;
   }
 
-  private updateSnakeArray(location: Location, direction: Direction): GridEntity {
+  private updateSnakeArray(
+    location: Location,
+    direction: Direction
+  ): GridEntity {
     let x = location.x;
     let y = location.y;
 
     if (direction === Direction.DOWN) {
       y = y + 1;
-      if(y >= this._gridDivision) {
-        y = 0
+      if (y >= this.gridDivision) {
+        y = 0;
       }
     }
     if (direction === Direction.UP) {
       y = y - 1;
-      if(y < 0) {
-        y = this._gridDivision - 1
+      if (y < 0) {
+        y = this.gridDivision - 1;
       }
     }
     if (direction === Direction.LEFT) {
       x = x - 1;
-      if(x < 0) {
-        x = this._gridDivision - 1
+      if (x < 0) {
+        x = this.gridDivision - 1;
       }
     }
     if (direction === Direction.RIGHT) {
       x = x + 1;
-      if (x >=this._gridDivision) {
-        x = 0
+      if (x >= this.gridDivision) {
+        x = 0;
       }
     }
 
-    const graphic = this.gameElementGraphicFactory(
-      false,
-      x,
-      y
-    );
-    const updatedLocation: Location = {x:x,y:y}
+    const graphic = this.gameElementGraphicFactory(false, x, y);
+    const updatedLocation: Location = { x, y };
 
-    const snakeEntity: GridEntity = {Location: updatedLocation, Graphic: graphic}
-    return snakeEntity
+    const snakeEntity: GridEntity = {
+      Location: updatedLocation,
+      Graphic: graphic,
+    };
+    return snakeEntity;
   }
 
   private getRandomGridLocation() {
-    return Math.floor(Math.random() * this._gridDivision);
+    return Math.floor(Math.random() * this.gridDivision);
   }
 
   private removeGraphic(graphic: Graphics) {
-    this.removeChild(graphic)
-    this._snake.pop()
+    this.removeChild(graphic);
+    graphic.destroy();
   }
-
-  private centerWorld(): void {
-    const isLandscape = window.innerWidth > window.innerHeight;
-
-    if (isLandscape) {
-      // Center horizontally, align to top
-      this.position.set((Manager.width - this.GridEntityWidthHeight) / 2, 0);
-    } else {
-      // Center vertically, align to left
-      this.position.set(0, (Manager.height - this.GridEntityWidthHeight) / 2);
-    }
-  }
-
-  private stepSnake() {
-    this._snake = [this.updateSnakeArray(this._snake[0].Location,this._currentDirection),...this._snake]
-    this.removeGraphic(this._snake[this._snake.length - 1].Graphic)
-    
-  }
-
-  //getters
 
   private getRandomDirection(): Direction {
     return Math.floor(Math.random() * 4) as Direction;
   }
 
-  public update() {
-    const rand = Math.floor(Math.random() * 10) 
+  private stepSnake() {
+    this.snake.unshift(
+      this.updateSnakeArray(this.snake[0].Location, this.currentDirection)
+    );
 
-    if(rand < 2) { // change direction 20% of the time
-        this._currentDirection = this.getRandomDirection();
+    this.removeGraphic(this.snake[this.snake.length - 1].Graphic);
+    this.snake.pop();
+  }
+
+  public update() {
+    const rand = Math.floor(Math.random() * 10);
+
+    if (rand < 2) {
+      // change direction 20% of the time
+      this.currentDirection = this.getRandomDirection();
     }
-    
-    this.stepSnake()
+
+    this.stepSnake();
   }
 }
