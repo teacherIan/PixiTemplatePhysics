@@ -7,6 +7,7 @@ import { PixiPlugin } from 'gsap/PixiPlugin';
 
 import WorldColors from './WorldColors';
 import SnakeWorld from './scenes/SnakeWorld';
+import SimpleSnakeTest from './scenes/SimpleSnakeTest';
 
 
 gsap.registerPlugin(PixiPlugin);
@@ -31,7 +32,11 @@ export default class LoadingScene extends Container implements IScene {
     super();
     
     this.snakeWorld = new SnakeWorld()
-    this.addChild(this.snakeWorld)
+    // Add snake world to viewport for proper camera control
+    const viewport = Manager.getViewport();
+    if (viewport) {
+      viewport.addChild(this.snakeWorld);
+    }
 
     //UI Elements
 
@@ -147,6 +152,13 @@ export default class LoadingScene extends Container implements IScene {
   
 
   IDestroy(): void {
-    // Clean up any resources if needed
+    // Clean up snake world from viewport
+    const viewport = Manager.getViewport();
+    if (viewport && this.snakeWorld && this.snakeWorld.parent === viewport) {
+      viewport.removeChild(this.snakeWorld);
+    }
+    if (this.snakeWorld) {
+      this.snakeWorld.destroy();
+    }
   }
 }

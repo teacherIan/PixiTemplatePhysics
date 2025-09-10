@@ -1,74 +1,110 @@
-import { Application, Container, Ticker } from 'pixi.js';
-import WorldColors from './WorldColors';
-import { PerformanceTest } from './scenes/PerformanceTest';
-import { DestroyableObjects } from './scenes/DestroyableObjects';
-import * as RAPIER from '@dimforge/rapier2d-compat';
-import { PhysicsWorld } from './PhysicsWorld';
-import { Basic } from './scenes/Basic';
-import { BasicTwo } from './scenes/BasicTwo';
-import Sand from './scenes/Sand';
+import { Application, Container, Ticker } from "pixi.js";
+import WorldColors from "./WorldColors";
+import { PerformanceTest } from "./scenes/PerformanceTest";
+import { DestroyableObjects } from "./scenes/DestroyableObjects";
+import * as RAPIER from "@dimforge/rapier2d-compat";
+import { PhysicsWorld } from "./PhysicsWorld";
+import { Basic } from "./scenes/Basic";
+import { BasicTwo } from "./scenes/BasicTwo";
+import Sand from "./scenes/Sand";
+import { Viewport } from "pixi-viewport";
 
 export class Manager {
   private constructor() {}
-  private static physicsWorld: PhysicsWorld;
-  private static app: Application;
+  private static _physicsWorld: PhysicsWorld;
+  private static _app: Application;
   private static currentScene: IScene;
   private static sceneIterator: number = 0;
   private static amtScenes: number = 2;
   public static started = false;
+  private static _viewport: Viewport;
 
-  public static get getPhysicsWorld() {
-    return Manager.physicsWorld;
-  }
-
+  // Safe getters that work before initialization
   public static get width(): number {
-    return Math.max(
-      document.documentElement.clientWidth,
-      window.innerWidth || 0
-    );
+    return Manager._app?.screen?.width || window.innerWidth;
   }
 
   public static get height(): number {
-    return Math.max(
-      document.documentElement.clientHeight,
-      window.innerHeight || 0
-    );
+    return Manager._app?.screen?.height || window.innerHeight;
   }
 
-  public static get getApp(): Application {
-    return this.app;
+  // Public getter for app
+  public static get app(): Application {
+    if (!Manager._app) {
+      throw new Error(
+        "Manager.app accessed before initialization. Call Manager.initialize() first."
+      );
+    }
+    return Manager._app;
+  }
+
+  // Fixed physicsWorld getter - check the PRIVATE property!
+  public static get physicsWorld(): PhysicsWorld {
+    if (!Manager._physicsWorld) {
+      // ← Check _physicsWorld, not physicsWorld!
+      throw new Error(
+        "Manager.physicsWorld accessed before initialization. Call Manager.initialize() first."
+      );
+    }
+    return Manager._physicsWorld;
+  }
+
+  // Public getter for viewport
+  public static get viewport(): Viewport {
+    if (!Manager._viewport) {
+      throw new Error(
+        "Manager.viewport accessed before initialization. Call Manager.initialize() first."
+      );
+    }
+    return Manager._viewport;
   }
 
   public static async initialize(): Promise<void> {
-    Manager.physicsWorld = new PhysicsWorld();
-    Manager.app = new Application();
+    Manager._physicsWorld = new PhysicsWorld(); // ← Set the PRIVATE property!
+    Manager._app = new Application();
 
-    await Manager.app.init({
-      preference: 'webgpu',
+    await Manager._app.init({
+      preference: "webgpu",
       resizeTo: window,
-      view: document.getElementById('app') as HTMLCanvasElement,
+      view: document.getElementById("app") as HTMLCanvasElement,
       resolution: window.devicePixelRatio || 1,
       autoDensity: true,
       backgroundColor: WorldColors.C,
       backgroundAlpha: 0.22,
-      powerPreference: 'high-performance',
+      powerPreference: "high-performance",
       antialias: true,
-      hello: true, //check for webGPU
+      hello: true,
     });
-    window.addEventListener('click', (e) => {
+
+    Manager._viewport = new Viewport({
+      screenWidth: window.innerWidth,
+      screenHeight: window.innerHeight,
+      worldWidth: Math.max(window.innerWidth, window.innerHeight) * 3, // Match snake world
+      worldHeight: Math.max(window.innerWidth, window.innerHeight) * 3,
+      events: Manager._app.renderer.events,
+    });
+
+    Manager._viewport.drag().pinch().wheel().decelerate();
+
+    Manager._app.stage.addChild(Manager._viewport);
+
+    window.addEventListener("click", (e) => {
       const target = e.target as HTMLInputElement;
-      if (this.started && target.id == 'app') {
+      if (this.started && target.id == "app") {
         this.changeScene();
       }
     });
 
-    Manager.app.ticker.add(Manager.update);
+    Manager._app.ticker.add(Manager.update);
   }
 
   private static update(t: Ticker) {
     if (Manager.currentScene) {
       Manager.currentScene.update(t);
-      Manager.physicsWorld.stepWorld(t.deltaMS / 10000);
+      if (Manager._physicsWorld) {
+        // ← Check the PRIVATE property!
+        Manager._physicsWorld.stepWorld(t.deltaMS / 10000);
+      }
     }
   }
 
@@ -76,43 +112,69 @@ export class Manager {
     const nextScene = this.sceneIterator % this.amtScenes;
     this.sceneIterator++;
 
-
-
+    // Clean up current scene
     if (Manager.currentScene) {
       Manager.currentScene.IDestroy();
-      Manager.app.stage.removeChild(Manager.currentScene);
+
+      // Remove from correct parent
+      if (Manager.currentScene.parent) {
+        Manager.currentScene.parent.removeChild(Manager.currentScene);
+      }
+
       Manager.currentScene.destroy();
     }
 
-    if (Manager.physicsWorld) {
-      Manager.physicsWorld.destroy();
+    if (Manager._physicsWorld) {
+      // ← Check the PRIVATE property!
+      Manager._physicsWorld.destroy();
     }
 
-    Manager.physicsWorld = new PhysicsWorld();
+    Manager._physicsWorld = new PhysicsWorld(); // ← Set the PRIVATE property!
 
-
+    // Handle loading scene
     if (loadingScene) {
       Manager.currentScene = loadingScene;
-      Manager.app.stage.addChild(loadingScene);
+      // Loading scene goes to stage (no viewport interactions needed)
+      if (Manager._app) {
+        Manager._app.stage.addChild(loadingScene);
+      }
       return;
     }
+
     if (!this.started) {
       this.started = true;
       return;
     }
 
+    // Handle game scenes - these go to viewport for camera/zoom
     switch (nextScene) {
       case 0:
-        Manager.app.stage.addChild(
-          (Manager.currentScene = new PerformanceTest(10))
-        );
-
+        Manager.currentScene = new PerformanceTest(10);
+        if (Manager._viewport) {
+          Manager._viewport.addChild(Manager.currentScene);
+        }
         break;
 
       case 1:
-        Manager.app.stage.addChild((Manager.currentScene = new Sand()));
+        Manager.currentScene = new Sand();
+        if (Manager._viewport) {
+          Manager._viewport.addChild(Manager.currentScene);
+        }
         break;
     }
+  }
+
+  // Helper method to center viewport
+  public static centerViewport(): void {
+    if (Manager._viewport) {
+      Manager._viewport.moveCenter(0, 0);
+      Manager._viewport.scale.set(1);
+    }
+  }
+
+  // Helper method to get viewport
+  public static getViewport(): Viewport | null {
+    return Manager._viewport || null;
   }
 }
 

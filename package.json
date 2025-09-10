@@ -20,6 +20,7 @@
     "@dimforge/rapier2d-compat": "^0.19.0",
     "gsap": "^3.13",
     "lil-gui": "^0.20.0",
+    "pixi-viewport": "^6.0.3",
     "pixi.js": "^8.13.1"
   },
   "resolutions": {

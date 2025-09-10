@@ -1,6 +1,7 @@
 import { Container, Graphics } from "pixi.js";
 import WorldColors from "../WorldColors";
 import { Manager } from "../Manager";
+
 interface Location {
   x: number;
   y: number;
@@ -18,11 +19,8 @@ enum Direction {
   DOWN,
 }
 
-// ========================================
-// MAIN CLASS
-// ========================================
-
 export default class SnakeWorld extends Container {
+  private cameraFollowSpeed: number = 0.1;
 
   private food!: GridEntity;
   private snake: GridEntity[] = [];
@@ -37,41 +35,42 @@ export default class SnakeWorld extends Container {
   private snakeGridSize!: number;
 
   // Constants
-  private readonly gridDivision: number = 20;
-
-  // ========================================
-  // CONSTRUCTOR & INITIALIZATION
-  // ========================================
+  private readonly gridDivision: number = 60; // Good balance between world size and segment visibility
 
   constructor() {
     super();
+    
     this.initializeDisplay();
     this.initializeGameState();
     this.initializeGameEntities();
+    this.setupCamera();
+
   }
 
   private initializeDisplay(): void {
+    
+    // Create a larger world for viewport navigation
     this.gridEntityWidthHeight =
-      window.innerWidth > window.innerHeight
-        ? window.innerHeight
-        : window.innerWidth;
+      Math.max(window.innerWidth, window.innerHeight) * 2;
     this.snakeGridSize = this.gridEntityWidthHeight / this.gridDivision;
 
-    this.devBackground = new Graphics().rect(
-      0,
-      0,
-      this.gridEntityWidthHeight,
-      this.gridEntityWidthHeight
-    );
+    this.devBackground = new Graphics()
+      .rect(0, 0, this.gridEntityWidthHeight, this.gridEntityWidthHeight)
+      .fill({ color: WorldColors.A, alpha: 0.1 }); // Subtle background
 
-    this.centerWorld();
+    // Position world at origin for viewport
+    this.position.set(0, 0);
+
+    
     this.addChild(this.devBackground);
+    
   }
 
   private initializeGameState(): void {
+    // Start snake near center of the large world
     this.snakeHeadLocation = {
-      x: this.getRandomGridLocation(),
-      y: this.getRandomGridLocation(),
+      x: Math.floor(this.gridDivision / 2),
+      y: Math.floor(this.gridDivision / 2),
     };
     this.currentDirection = this.getRandomDirection();
   }
@@ -86,26 +85,47 @@ export default class SnakeWorld extends Container {
     this.food = this.createFood();
   }
 
-  // ========================================
-  // FACTORY METHODS
-  // ========================================
+  private setupCamera(): void {
+    const viewport = Manager.getViewport();
+    if (viewport && this.snake.length > 0) {
+      // Move viewport to snake head initially
+      const snakeHead = this.snake[0];
+      const worldX = snakeHead.Location.x * this.snakeGridSize;
+      const worldY = snakeHead.Location.y * this.snakeGridSize;
+
+      viewport.moveCenter(worldX, worldY);
+
+      viewport.follow(snakeHead.Graphic, {
+        acceleration: 0.1,
+        speed: this.cameraFollowSpeed * 30, // Viewport uses different speed scale
+        radius: 50, // Stop following when within this radius
+      });
+
+      
+      
+    }
+  }
 
   private createGraphic(
     isFood: boolean,
     gridX: number,
     gridY: number
   ): Graphics {
-    const fill = isFood ? WorldColors.C : WorldColors.B;
+    const fill = isFood ? WorldColors.E : WorldColors.B; // Use more contrasting colors
 
     const graphic = new Graphics()
       .roundRect(
-        gridX * this.snakeGridSize,
-        gridY * this.snakeGridSize,
-        this.snakeGridSize,
-        this.snakeGridSize,
-        10
+        0, // Start at local 0,0
+        0,
+        this.snakeGridSize * 0.9,
+        this.snakeGridSize * 0.9,
+        5
       )
       .fill(fill);
+
+    // Position the graphic in world space
+    graphic.x = gridX * this.snakeGridSize;
+    graphic.y = gridY * this.snakeGridSize;
 
     this.addChild(graphic);
     return graphic;
@@ -135,10 +155,6 @@ export default class SnakeWorld extends Container {
     };
   }
 
-  // ========================================
-  // GAME LOGIC METHODS
-  // ========================================
-
   private calculateNewPosition(
     location: Location,
     direction: Direction
@@ -147,16 +163,16 @@ export default class SnakeWorld extends Container {
 
     switch (direction) {
       case Direction.DOWN:
-        y = (y + 1) % this.gridDivision;
+        y = y + 1;
         break;
       case Direction.UP:
-        y = y - 1 < 0 ? this.gridDivision - 1 : y - 1;
+        y = y - 1;
         break;
       case Direction.LEFT:
-        x = x - 1 < 0 ? this.gridDivision - 1 : x - 1;
+        x = x - 1;
         break;
       case Direction.RIGHT:
-        x = (x + 1) % this.gridDivision;
+        x = x + 1;
         break;
     }
 
@@ -164,31 +180,40 @@ export default class SnakeWorld extends Container {
   }
 
   private moveSnake(): void {
-    // Store old tail before adding new head
-    const oldTail = this.snake[this.snake.length - 1];
-
-    // Add new head
-    const newHead = this.createSnakeSegment(
+    const newHeadLocation = this.calculateNewPosition(
       this.snake[0].Location,
       this.currentDirection
     );
-    this.snake.unshift(newHead);
+    
+    this.removeChild(this.snake[0].Graphic);
 
-    // Remove old tail
-    this.removeChild(oldTail.Graphic);
-    this.snake.pop();
-
-    // Update snake head location reference
+    this.snake[0].Location = newHeadLocation;
+    
+    this.snake[0].Graphic = this.createGraphic(false, newHeadLocation.x, newHeadLocation.y);
+    
+    this.updateCameraTarget();
+    
     this.snakeHeadLocation = this.snake[0].Location;
+  }
+
+  private updateCameraTarget(): void {
+    const viewport = Manager.getViewport();
+    if (viewport && this.snake.length > 0) {
+      const snakeHead = this.snake[0];
+      
+      // Update the follow target to the new head graphic
+      viewport.follow(snakeHead.Graphic, {
+        acceleration: 0.02,
+        speed: this.cameraFollowSpeed * 10,
+        radius: 50,
+      });
+      
+    }
   }
 
   private shouldChangeDirection(): boolean {
     return Math.floor(Math.random() * 10) < 2; // 20% chance
   }
-
-  // ========================================
-  // UTILITY METHODS
-  // ========================================
 
   private getRandomGridLocation(): number {
     return Math.floor(Math.random() * this.gridDivision);
@@ -202,25 +227,12 @@ export default class SnakeWorld extends Container {
     return this.snakeHeadLocation;
   }
 
-  private centerWorld(): void {
-    const isLandscape = window.innerWidth > window.innerHeight;
-
-    if (isLandscape) {
-      this.position.set((Manager.width - this.gridEntityWidthHeight) / 2, 0);
-    } else {
-      this.position.set(0, (Manager.height - this.gridEntityWidthHeight) / 2);
-    }
-  }
-
-  // ========================================
-  // Update
-  // ========================================
-
   public update(): void {
     if (this.shouldChangeDirection()) {
       this.currentDirection = this.getRandomDirection();
     }
 
     this.moveSnake();
+    // this.followSnakeHead();
   }
 }
