@@ -4,11 +4,8 @@ import { manifest } from './Assets';
 import gsap from 'gsap';
 import * as PIXI from 'pixi.js';
 import { PixiPlugin } from 'gsap/PixiPlugin';
-
 import WorldColors from './WorldColors';
 import SnakeWorld from './scenes/SnakeWorld';
-import SimpleSnakeTest from './scenes/SimpleSnakeTest';
-
 
 gsap.registerPlugin(PixiPlugin);
 PixiPlugin.registerPIXI(PIXI);
@@ -24,14 +21,13 @@ export default class LoadingScene extends Container implements IScene {
   private loaded: boolean;
   private loaderBarWidth: number;
   private loaderBarBorderLineStyleWidth: number;
-  private snakeWorld: SnakeWorld
+  private snakeWorld: SnakeWorld;
   //game world
-
 
   constructor() {
     super();
-    
-    this.snakeWorld = new SnakeWorld()
+
+    this.snakeWorld = new SnakeWorld();
     // Add snake world to viewport for proper camera control
     const viewport = Manager.getViewport();
     if (viewport) {
@@ -96,8 +92,6 @@ export default class LoadingScene extends Container implements IScene {
     // Implementation not needed for this scene
   }
 
-
-
   private resize(): void {
     this.setLayout();
   }
@@ -136,20 +130,18 @@ export default class LoadingScene extends Container implements IScene {
   private addTicker() {
     Ticker.shared.add(() => {
       if (this.loaded) this.text.text = 'PIXI.JS\nRAPIER.JS';
-      
-        this.timer += 1;
-        if (this.timer == 10) {
-          this.dots += 1;
-          this.timer = 0;
 
-          this.snakeWorld.update()
+      this.timer += 1;
+      if (this.timer == 10) {
+        this.dots += 1;
+        this.timer = 0;
 
-        }
-        let dotsString: string = '.'.repeat(this.dots % 5);
-        this.text.text = 'LOADING' + dotsString;
+        this.snakeWorld.update();
       }
-  )}
-  
+      let dotsString: string = '.'.repeat(this.dots % 5);
+      this.text.text = 'LOADING' + dotsString;
+    });
+  }
 
   IDestroy(): void {
     // Clean up snake world from viewport

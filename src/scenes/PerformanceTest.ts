@@ -24,7 +24,6 @@ export class PerformanceTest extends Container implements IScene {
   private counter: number;
   private interval: ReturnType<typeof setInterval>;
   private emitterLocation;
-  
 
   constructor(objectSize: number) {
     super();
@@ -33,7 +32,7 @@ export class PerformanceTest extends Container implements IScene {
     this.emitBallObject = true;
     this.emitCubicObject = true;
     this.objectSize = objectSize;
-    this.physicsWorld = Manager.getPhysicsWorld; // Use Manager's physics world
+    this.physicsWorld = Manager.physicsWorld; // Use Manager's physics world
     this.physicsObjects = [];
     this.intervalTimeout = 50;
     this.counter = 0;

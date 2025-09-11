@@ -1,13 +1,9 @@
-import { Application, Container, Ticker } from "pixi.js";
-import WorldColors from "./WorldColors";
-import { PerformanceTest } from "./scenes/PerformanceTest";
-import { DestroyableObjects } from "./scenes/DestroyableObjects";
-import * as RAPIER from "@dimforge/rapier2d-compat";
-import { PhysicsWorld } from "./PhysicsWorld";
-import { Basic } from "./scenes/Basic";
-import { BasicTwo } from "./scenes/BasicTwo";
-import Sand from "./scenes/Sand";
-import { Viewport } from "pixi-viewport";
+import { Application, Container, Ticker } from 'pixi.js';
+import WorldColors from './WorldColors';
+import { PerformanceTest } from './scenes/PerformanceTest';
+import { PhysicsWorld } from './PhysicsWorld';
+import Sand from './scenes/Sand';
+import { Viewport } from 'pixi-viewport';
 
 export class Manager {
   private constructor() {}
@@ -32,7 +28,7 @@ export class Manager {
   public static get app(): Application {
     if (!Manager._app) {
       throw new Error(
-        "Manager.app accessed before initialization. Call Manager.initialize() first."
+        'Manager.app accessed before initialization. Call Manager.initialize() first.'
       );
     }
     return Manager._app;
@@ -43,7 +39,7 @@ export class Manager {
     if (!Manager._physicsWorld) {
       // ← Check _physicsWorld, not physicsWorld!
       throw new Error(
-        "Manager.physicsWorld accessed before initialization. Call Manager.initialize() first."
+        'Manager.physicsWorld accessed before initialization. Call Manager.initialize() first.'
       );
     }
     return Manager._physicsWorld;
@@ -53,7 +49,7 @@ export class Manager {
   public static get viewport(): Viewport {
     if (!Manager._viewport) {
       throw new Error(
-        "Manager.viewport accessed before initialization. Call Manager.initialize() first."
+        'Manager.viewport accessed before initialization. Call Manager.initialize() first.'
       );
     }
     return Manager._viewport;
@@ -64,14 +60,14 @@ export class Manager {
     Manager._app = new Application();
 
     await Manager._app.init({
-      preference: "webgpu",
+      preference: 'webgpu',
       resizeTo: window,
-      view: document.getElementById("app") as HTMLCanvasElement,
+      view: document.getElementById('app') as HTMLCanvasElement,
       resolution: window.devicePixelRatio || 1,
       autoDensity: true,
       backgroundColor: WorldColors.C,
       backgroundAlpha: 0.22,
-      powerPreference: "high-performance",
+      powerPreference: 'high-performance',
       antialias: true,
       hello: true,
     });
@@ -88,9 +84,9 @@ export class Manager {
 
     Manager._app.stage.addChild(Manager._viewport);
 
-    window.addEventListener("click", (e) => {
+    window.addEventListener('click', (e) => {
       const target = e.target as HTMLInputElement;
-      if (this.started && target.id == "app") {
+      if (this.started && target.id == 'app') {
         this.changeScene();
       }
     });
