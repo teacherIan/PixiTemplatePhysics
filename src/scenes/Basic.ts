@@ -33,7 +33,7 @@ export class Basic extends Container implements IScene {
 
     this.sprites.push(sprite);
     this.colliders.push(
-      Manager.getPhysicsWorld.createPhysicsSphere(x, y, sprite.width)
+      Manager.physicsWorld.createPhysicsSphere(x, y, sprite.width)
     );
     this.addChild(sprite);
   }
@@ -45,9 +45,9 @@ export class Basic extends Container implements IScene {
 
     this.sprites = [];
 
-    let b = Manager.getPhysicsWorld.World?.bodies.getAll();
+    let b = Manager.physicsWorld.World?.bodies.getAll();
     b?.forEach((body, index) => {
-      if (index > 2) Manager.getPhysicsWorld.World?.removeRigidBody(body);
+      if (index > 2) Manager.physicsWorld.World?.removeRigidBody(body);
     });
 
     this.colliders = [];

@@ -79,7 +79,7 @@ export class DestroyableObjects extends Container implements IScene {
     sprite.height = sprite.width;
     this.dynamicSprites.push(sprite);
     this.dynamicColliders.push(
-      Manager.getPhysicsWorld.createPhysicsSphere(x, y, sprite.width)
+      Manager.physicsWorld.createPhysicsSphere(x, y, sprite.width)
     );
     this.addChild(sprite);
   }
@@ -94,7 +94,7 @@ export class DestroyableObjects extends Container implements IScene {
 
     this.staticSprites.push(sprite);
     this.staticColliders.push(
-      Manager.getPhysicsWorld.createStaticPhysicsRect(
+      Manager.physicsWorld.createStaticPhysicsRect(
         x,
         y,
         sprite.width,
@@ -112,12 +112,7 @@ export class DestroyableObjects extends Container implements IScene {
     sprite.height = this.objectSize * Math.random() + 5;
     this.dynamicSprites.push(sprite);
     this.dynamicColliders.push(
-      Manager.getPhysicsWorld.createPhysicsRect(
-        x,
-        y,
-        sprite.width,
-        sprite.height
-      )
+      Manager.physicsWorld.createPhysicsRect(x, y, sprite.width, sprite.height)
     );
     this.addChild(sprite);
   }
@@ -184,7 +179,7 @@ export class DestroyableObjects extends Container implements IScene {
     this.dynamicColliders.forEach((dynamicCollider, dynamicColliderIndex) => {
       //find contacts between static objects and non-static objects
       this.staticColliders.forEach((staticCollider, staticColliderIndex) => {
-        Manager.getPhysicsWorld.World?.contactPair(
+        Manager.physicsWorld.World?.contactPair(
           staticCollider,
           dynamicCollider,
           () => {
@@ -205,7 +200,7 @@ export class DestroyableObjects extends Container implements IScene {
 
     // Physics stepping is handled by Manager.update(), don't duplicate it here
     // Manager.getPhysicsWorld.stepWorld(t.deltaTime * 0.2);
-    Manager.getApp.render();
+    Manager.app.render();
   }
 
   IDestroy(): void {
@@ -220,9 +215,9 @@ export class DestroyableObjects extends Container implements IScene {
     this.staticSprites = [];
     this.dynamicSprites = [];
     //destroy all object besides walls
-    let b = Manager.getPhysicsWorld.World?.bodies.getAll();
+    let b = Manager.physicsWorld.World?.bodies.getAll();
     b?.forEach((body, index) => {
-      if (index > 2) Manager.getPhysicsWorld.World?.removeRigidBody(body);
+      if (index > 2) Manager.physicsWorld.World?.removeRigidBody(body);
     });
 
     this.dynamicColliders = [];

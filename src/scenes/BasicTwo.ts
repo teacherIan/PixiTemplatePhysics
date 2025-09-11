@@ -42,7 +42,7 @@ export class BasicTwo extends Container implements IScene {
 
     this.sprites.push(sprite);
     this.colliders.push(
-      Manager.getPhysicsWorld.createPhysicsSphere(x, y, sprite.width)
+      Manager.physicsWorld.createPhysicsSphere(x, y, sprite.width)
     );
     this.addChild(sprite);
   }
@@ -55,12 +55,12 @@ export class BasicTwo extends Container implements IScene {
 
     this.sprites = [];
 
-    let b = Manager.getPhysicsWorld.World?.bodies.getAll();
+    let b = Manager.physicsWorld.World?.bodies.getAll();
     b?.forEach((body, index, array) => {
-      if (index > 3) Manager.getPhysicsWorld.World?.removeRigidBody(body);
+      if (index > 3) Manager.physicsWorld.World?.removeRigidBody(body);
     });
 
     // this.colliders = [];
-    console.log(Manager.getPhysicsWorld.World?.bodies.getAll());
+    console.log(Manager.physicsWorld.World?.bodies.getAll());
   }
 }
