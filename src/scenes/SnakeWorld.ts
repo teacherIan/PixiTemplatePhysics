@@ -19,6 +19,10 @@ enum Direction {
   DOWN,
 }
 
+const viewPort = {
+
+}
+
 export default class SnakeWorld extends Container {
   private cameraFollowSpeed: number = 0.1;
 
@@ -93,7 +97,7 @@ export default class SnakeWorld extends Container {
       viewport.follow(snakeHead.Graphic, {
         acceleration: 0.1,
         speed: this.cameraFollowSpeed * 30, // Viewport uses different speed scale
-        radius: 50, // Stop following when within this radius
+        radius: 75, // Stop following when within this radius
       });
     }
   }
@@ -103,7 +107,7 @@ export default class SnakeWorld extends Container {
     gridX: number,
     gridY: number
   ): Graphics {
-    const fill = isFood ? WorldColors.E : WorldColors.B; // Use more contrasting colors
+    const fill = isFood ? WorldColors.E : WorldColors.B; 
 
     const graphic = new Graphics()
       .roundRect(
@@ -172,7 +176,7 @@ export default class SnakeWorld extends Container {
   }
 
   private moveSnake(): void {
-    // Update snake head location first
+    
     this.snakeHeadLocation = this.snake[0].Location;
 
     const newHeadLocation = this.calculateNewPosition(
@@ -210,7 +214,7 @@ export default class SnakeWorld extends Container {
   }
 
   private shouldChangeDirection(): boolean {
-    return Math.floor(Math.random() * 10) < 2; // 20% chance
+    return Math.floor(Math.random() * 10) < 2; 
   }
 
   private getRandomGridLocation(): number {
@@ -230,20 +234,19 @@ export default class SnakeWorld extends Container {
     const dx = this.food.Location.x - this.snake[0].Location.x;
     const dy = this.food.Location.y - this.snake[0].Location.y;
 
-    // If we're already at the food, don't move (or pick random direction)
+    
     if (dx === 0 && dy === 0) {
       return this.getRandomDirection();
     }
 
-    // Always move in the direction with the larger distance
     if (Math.abs(dx) > Math.abs(dy)) {
-      // Move horizontally
+    
       return dx > 0 ? Direction.RIGHT : Direction.LEFT;
     } else if (Math.abs(dy) > Math.abs(dx)) {
-      // Move vertically
+    
       return dy > 0 ? Direction.DOWN : Direction.UP;
     } else {
-      // Equal distances - choose randomly between the two valid directions
+    
       const horizontalDir = dx > 0 ? Direction.RIGHT : Direction.LEFT;
       const verticalDir = dy > 0 ? Direction.DOWN : Direction.UP;
       return Math.random() < 0.5 ? horizontalDir : verticalDir;
@@ -251,11 +254,9 @@ export default class SnakeWorld extends Container {
   }
 
   public update(): void {
-    // if (this.shouldChangeDirection()) {
-    //   this.currentDirection = this.getRandomDirection();
-    // }
+
 
     this.moveSnake();
-    // this.followSnakeHead();
+    
   }
 }
