@@ -1,6 +1,6 @@
-import { Container, Graphics } from "pixi.js";
-import WorldColors from "../WorldColors";
-import { Manager } from "../Manager";
+import { Container, Graphics } from 'pixi.js';
+import WorldColors from '../WorldColors';
+import { Manager } from '../Manager';
 
 interface Location {
   x: number;
@@ -39,17 +39,14 @@ export default class SnakeWorld extends Container {
 
   constructor() {
     super();
-    
+
     this.initializeDisplay();
     this.initializeGameState();
     this.initializeGameEntities();
     this.setupCamera();
-
   }
 
   private initializeDisplay(): void {
-    
-    // Create a larger world for viewport navigation
     this.gridEntityWidthHeight =
       Math.max(window.innerWidth, window.innerHeight) * 2;
     this.snakeGridSize = this.gridEntityWidthHeight / this.gridDivision;
@@ -61,9 +58,7 @@ export default class SnakeWorld extends Container {
     // Position world at origin for viewport
     this.position.set(0, 0);
 
-    
-    this.addChild(this.devBackground);
-    
+    // this.addChild(this.devBackground);
   }
 
   private initializeGameState(): void {
@@ -100,9 +95,6 @@ export default class SnakeWorld extends Container {
         speed: this.cameraFollowSpeed * 30, // Viewport uses different speed scale
         radius: 50, // Stop following when within this radius
       });
-
-      
-      
     }
   }
 
@@ -117,8 +109,8 @@ export default class SnakeWorld extends Container {
       .roundRect(
         0, // Start at local 0,0
         0,
-        this.snakeGridSize * 0.9,
-        this.snakeGridSize * 0.9,
+        this.snakeGridSize * 1,
+        this.snakeGridSize * 1,
         5
       )
       .fill(fill);
@@ -180,19 +172,26 @@ export default class SnakeWorld extends Container {
   }
 
   private moveSnake(): void {
+    // Update snake head location first
+    this.snakeHeadLocation = this.snake[0].Location;
+
     const newHeadLocation = this.calculateNewPosition(
       this.snake[0].Location,
-      this.currentDirection
+      this.findDirectionToFood()
     );
-    
+
     this.removeChild(this.snake[0].Graphic);
 
     this.snake[0].Location = newHeadLocation;
-    
-    this.snake[0].Graphic = this.createGraphic(false, newHeadLocation.x, newHeadLocation.y);
-    
+
+    this.snake[0].Graphic = this.createGraphic(
+      false,
+      newHeadLocation.x,
+      newHeadLocation.y
+    );
+
     this.updateCameraTarget();
-    
+
     this.snakeHeadLocation = this.snake[0].Location;
   }
 
@@ -200,14 +199,13 @@ export default class SnakeWorld extends Container {
     const viewport = Manager.getViewport();
     if (viewport && this.snake.length > 0) {
       const snakeHead = this.snake[0];
-      
+
       // Update the follow target to the new head graphic
       viewport.follow(snakeHead.Graphic, {
         acceleration: 0.02,
         speed: this.cameraFollowSpeed * 10,
         radius: 50,
       });
-      
     }
   }
 
@@ -227,10 +225,35 @@ export default class SnakeWorld extends Container {
     return this.snakeHeadLocation;
   }
 
-  public update(): void {
-    if (this.shouldChangeDirection()) {
-      this.currentDirection = this.getRandomDirection();
+  private findDirectionToFood(): Direction {
+    console.log('Find direction called');
+    const dx = this.food.Location.x - this.snake[0].Location.x;
+    const dy = this.food.Location.y - this.snake[0].Location.y;
+
+    // If we're already at the food, don't move (or pick random direction)
+    if (dx === 0 && dy === 0) {
+      return this.getRandomDirection();
     }
+
+    // Always move in the direction with the larger distance
+    if (Math.abs(dx) > Math.abs(dy)) {
+      // Move horizontally
+      return dx > 0 ? Direction.RIGHT : Direction.LEFT;
+    } else if (Math.abs(dy) > Math.abs(dx)) {
+      // Move vertically
+      return dy > 0 ? Direction.DOWN : Direction.UP;
+    } else {
+      // Equal distances - choose randomly between the two valid directions
+      const horizontalDir = dx > 0 ? Direction.RIGHT : Direction.LEFT;
+      const verticalDir = dy > 0 ? Direction.DOWN : Direction.UP;
+      return Math.random() < 0.5 ? horizontalDir : verticalDir;
+    }
+  }
+
+  public update(): void {
+    // if (this.shouldChangeDirection()) {
+    //   this.currentDirection = this.getRandomDirection();
+    // }
 
     this.moveSnake();
     // this.followSnakeHead();

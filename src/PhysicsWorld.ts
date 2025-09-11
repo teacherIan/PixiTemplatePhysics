@@ -18,7 +18,6 @@ export class PhysicsWorld {
   private physicsWorld: RAPIER.World;
   private fixedTimeStep: number = 1.0 / 120.0;
   private accumulator: number = 0.0;
-  private maxSubSteps: number = 4; // Prevent spiral of death
 
   constructor() {
     const gravity = new RAPIER.Vector2(0.0, 990);

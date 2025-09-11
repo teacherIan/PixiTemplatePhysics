@@ -75,8 +75,8 @@ export class Manager {
     Manager._viewport = new Viewport({
       screenWidth: window.innerWidth,
       screenHeight: window.innerHeight,
-      worldWidth: Math.max(window.innerWidth, window.innerHeight) * 3, // Match snake world
-      worldHeight: Math.max(window.innerWidth, window.innerHeight) * 3,
+      worldWidth: Math.max(window.innerWidth, window.innerHeight) * 2, // Match snake world
+      worldHeight: Math.max(window.innerWidth, window.innerHeight) * 2,
       events: Manager._app.renderer.events,
     });
 
