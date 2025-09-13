@@ -22,6 +22,7 @@ export default class LoadingScene extends Container implements IScene {
   private loaderBarWidth: number;
   private loaderBarBorderLineStyleWidth: number;
   private snakeWorld: SnakeWorld;
+  private tickerFunction: () => void;
   //game world
 
   constructor() {
@@ -123,12 +124,14 @@ export default class LoadingScene extends Container implements IScene {
 
   private buttonClicked() {
     if (this.loaded) {
+      console.log("=== TRANSITIONING TO NEXT SCENE ===");
+      // Don't reset viewport here - let it stay centered on snake until transition
       Manager.changeScene();
     }
   }
 
   private addTicker() {
-    Ticker.shared.add(() => {
+    this.tickerFunction = () => {
       if (this.loaded) this.text.text = 'PIXI.JS\nRAPIER.JS';
 
       this.timer += 1;
@@ -140,10 +143,19 @@ export default class LoadingScene extends Container implements IScene {
       }
       let dotsString: string = '.'.repeat(this.dots % 5);
       this.text.text = 'LOADING' + dotsString;
-    });
+    };
+    
+    Ticker.shared.add(this.tickerFunction);
   }
 
   IDestroy(): void {
+    console.log("=== DESTROYING LOADING SCENE ===");
+    
+    // Remove the ticker to stop snake updates
+    if (this.tickerFunction) {
+      Ticker.shared.remove(this.tickerFunction);
+    }
+    
     // Clean up snake world from viewport
     const viewport = Manager.getViewport();
     if (viewport && this.snakeWorld && this.snakeWorld.parent === viewport) {
@@ -152,5 +164,7 @@ export default class LoadingScene extends Container implements IScene {
     if (this.snakeWorld) {
       this.snakeWorld.destroy();
     }
+    
+    // Note: follow plugin is already removed in Manager.changeScene()
   }
 }

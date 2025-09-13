@@ -19,12 +19,14 @@ enum Direction {
   DOWN,
 }
 
-const viewPort = {
-
+const viewPortOptions = {
+  cameraSpeed: 3,
+  acceleration: 0.3
 }
 
 export default class SnakeWorld extends Container {
-  private cameraFollowSpeed: number = 0.1;
+  
+  
 
   private food!: GridEntity;
   private snake: GridEntity[] = [];
@@ -39,7 +41,7 @@ export default class SnakeWorld extends Container {
   private snakeGridSize!: number;
 
   // Constants
-  private readonly gridDivision: number = 60; // Good balance between world size and segment visibility
+  private readonly gridDivision: number = 60;
 
   constructor() {
     super();
@@ -93,12 +95,6 @@ export default class SnakeWorld extends Container {
       const worldY = snakeHead.Location.y * this.snakeGridSize;
 
       viewport.moveCenter(worldX, worldY);
-
-      viewport.follow(snakeHead.Graphic, {
-        acceleration: 0.1,
-        speed: this.cameraFollowSpeed * 30, // Viewport uses different speed scale
-        radius: 75, // Stop following when within this radius
-      });
     }
   }
 
@@ -197,17 +193,22 @@ export default class SnakeWorld extends Container {
     this.updateCameraTarget();
 
     this.snakeHeadLocation = this.snake[0].Location;
+    if(this.snakeHeadLocation.x === this.food.Location.x && this.snakeHeadLocation.y === this.food.Location.y) {
+      console.log('Food eaten');
+      this.removeChild(this.food.Graphic);
+      this.food = this.createFood();
+    }
+
+    this.createSnakeSegment(this.snakeHeadLocation,this.findDirectionToFood())
   }
 
   private updateCameraTarget(): void {
-    const viewport = Manager.getViewport();
-    if (viewport && this.snake.length > 0) {
+    if (this.snake.length > 0) {
       const snakeHead = this.snake[0];
-
-      // Update the follow target to the new head graphic
-      viewport.follow(snakeHead.Graphic, {
+      // Use Manager's centralized viewport control
+      Manager.followTarget(snakeHead.Graphic, {
         acceleration: 0.02,
-        speed: this.cameraFollowSpeed * 10,
+        speed: 10,
         radius: 50,
       });
     }
@@ -218,7 +219,7 @@ export default class SnakeWorld extends Container {
   }
 
   private getRandomGridLocation(): number {
-    return Math.floor(Math.random() * this.gridDivision);
+    return Math.floor(Math.random() * this.gridDivision / 3);
   }
 
   private getRandomDirection(): Direction {

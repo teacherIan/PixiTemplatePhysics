@@ -22,8 +22,9 @@ export class PerformanceTest extends Container implements IScene {
   private physicsObjects: IPhysicsObject[];
   private objectSize: number;
   private counter: number;
-  private interval: ReturnType<typeof setInterval>;
+  private frameCounter: number = 0;
   private emitterLocation;
+  private firstObjectCreated: boolean = false;
 
   constructor(objectSize: number) {
     super();
@@ -36,10 +37,10 @@ export class PerformanceTest extends Container implements IScene {
     this.physicsObjects = [];
     this.intervalTimeout = 50;
     this.counter = 0;
+    this.frameCounter = 0;
     this.textStyle = this.setTextStyle();
     this.counterText = this.setCounterText();
     this.setGUI();
-    this.interval = this.startInterval();
   }
 
   private setTextStyle() {
@@ -72,6 +73,9 @@ export class PerformanceTest extends Container implements IScene {
       render: sprite,
       physics: this.physicsWorld.createPhysicsSphere(x, y, sprite.width),
     });
+    
+    // Set up viewport following for the first object created
+    this.setupViewportFollowingIfFirst(sprite);
   }
 
   private cubicPhysicsSpriteFactory(x: number, y: number) {
@@ -90,37 +94,69 @@ export class PerformanceTest extends Container implements IScene {
         sprite.height
       ),
     });
+    
+    // Set up viewport following for the first object created
+    this.setupViewportFollowingIfFirst(sprite);
   }
+  
+  private setupViewportFollowingIfFirst(sprite: Sprite): void {
+    if (!this.firstObjectCreated) {
+      this.firstObjectCreated = true;
+      console.log("=== PERFORMANCE TEST: Setting up viewport ===");
+      console.log("Emitter location:", this.emitterLocation);
+      console.log("Window dimensions:", window.innerWidth, window.innerHeight);
+      
+      // Center the viewport on where objects are being created
+      const centerX = this.emitterLocation + 100; // Center of emitter area
+      const centerY = window.innerHeight / 2; // Middle of screen height
+      
+      console.log("Calculated center:", centerX, centerY);
+      Manager.centerViewportAt(centerX, centerY);
+      
+      console.log("=== PERFORMANCE TEST: Viewport setup complete ===");
+    }
+  }
+  
   update(t: Ticker): void {
+    // Update physics objects positions
     this.physicsObjects.forEach((obj) => {
       const translation = obj.physics.translation();
       obj.render.position.set(translation.x, translation.y);
       obj.render.rotation = obj.physics.rotation();
     });
+
+    // Create new objects based on intervalTimeout (convert to frame-based timing)
+    this.frameCounter++;
+    const framesToWait = Math.floor(this.intervalTimeout / 16.67); // Convert ms to frames (assuming 60fps)
+    
+    if (this.frameCounter >= framesToWait) {
+      this.frameCounter = 0;
+      
+      let objectsAdded = 0;
+      
+      if (this.emitBallObject) {
+        this.circlePhysicsSpriteFactory(
+          Math.random() * 200 + this.emitterLocation,
+          -Math.random() * 500
+        );
+        objectsAdded++;
+      }
+      
+      if (this.emitCubicObject) {
+        this.cubicPhysicsSpriteFactory(
+          Math.random() * 200 + this.emitterLocation,
+          -Math.random() * 500
+        );
+        objectsAdded++;
+      }
+      
+      this.counter += objectsAdded;
+      this.counterText.text = this.counter.toString();
+    }
   }
 
   private resetWorld() {
     Manager.changeScene();
-  }
-
-  private startInterval() {
-    return setInterval(() => {
-      let objectsAdded = 2;
-      (this.counterText.text = this.counter),
-        this.emitBallObject
-          ? this.circlePhysicsSpriteFactory(
-              Math.random() * 200 + this.emitterLocation,
-              -Math.random() * 500
-            )
-          : objectsAdded--;
-      this.emitCubicObject
-        ? this.cubicPhysicsSpriteFactory(
-            Math.random() * 200 + this.emitterLocation,
-            -Math.random() * 500
-          )
-        : objectsAdded--;
-      this.counter += objectsAdded;
-    }, this.intervalTimeout);
   }
   private setGUI() {
     const guiOptions = {
@@ -160,8 +196,7 @@ export class PerformanceTest extends Container implements IScene {
           break;
         case 'intervalTimeout': {
           this.intervalTimeout = event.value;
-          clearInterval(this.interval);
-          this.interval = this.startInterval();
+          // No need to restart interval, just update the property
           break;
         }
       }
@@ -170,11 +205,6 @@ export class PerformanceTest extends Container implements IScene {
   }
 
   IDestroy(): void {
-    // Clear the interval first
-    if (this.interval) {
-      clearInterval(this.interval);
-    }
-
     // Destroy GUI
     this.GUI.destroy();
 

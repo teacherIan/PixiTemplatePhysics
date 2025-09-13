@@ -1,7 +1,11 @@
 import { Application, Container, Ticker } from 'pixi.js';
 import WorldColors from './WorldColors';
 import { PerformanceTest } from './scenes/PerformanceTest';
+import { DestroyableObjects } from './scenes/DestroyableObjects';
+import * as RAPIER from '@dimforge/rapier2d-compat';
 import { PhysicsWorld } from './PhysicsWorld';
+import { Basic } from './scenes/Basic';
+import { BasicTwo } from './scenes/BasicTwo';
 import Sand from './scenes/Sand';
 import { Viewport } from 'pixi-viewport';
 
@@ -55,6 +59,47 @@ export class Manager {
     return Manager._viewport;
   }
 
+  // Viewport control methods
+  public static followTarget(target: any, options?: any): void {
+    if (Manager._viewport) {
+      console.log("Manager: Setting viewport to follow target", target, "at position:", target.position || target.x + "," + target.y);
+      Manager._viewport.follow(target, {
+        speed: 8,
+        acceleration: 0.02,
+        radius: 50,
+        ...options
+      });
+    }
+  }
+
+  public static stopFollowing(): void {
+    if (Manager._viewport) {
+      console.log("Manager: Stopping viewport following");
+      Manager._viewport.plugins.remove('follow');
+    }
+  }
+
+  public static centerViewportAt(x: number, y: number): void {
+    if (Manager._viewport) {
+      console.log("Manager: Centering viewport at", x, y, "current center:", Manager._viewport.center);
+      Manager._viewport.moveCenter(x, y);
+      console.log("Manager: Viewport centered, new center:", Manager._viewport.center);
+    }
+  }
+
+  public static resetViewport(): void {
+    if (Manager._viewport) {
+      console.log("Manager: Resetting viewport");
+      console.log("Manager: Before reset - center:", Manager._viewport.center, "scale:", Manager._viewport.scale);
+      Manager._viewport.plugins.remove('follow');
+      Manager._viewport.plugins.remove('decelerate');
+      Manager._viewport.moveCenter(0, 0);
+      Manager._viewport.scale.set(1);
+      Manager._viewport.drag().pinch().wheel().decelerate();
+      console.log("Manager: After reset - center:", Manager._viewport.center, "scale:", Manager._viewport.scale);
+    }
+  }
+
   public static async initialize(): Promise<void> {
     Manager._physicsWorld = new PhysicsWorld(); // ← Set the PRIVATE property!
     Manager._app = new Application();
@@ -105,10 +150,15 @@ export class Manager {
   }
 
   public static changeScene(loadingScene?: IScene): void {
+    console.log("=== CHANGING SCENE ===");
+    
+    // Stop following immediately
+    Manager.stopFollowing();
+    
     const nextScene = this.sceneIterator % this.amtScenes;
     this.sceneIterator++;
 
-    // Clean up current scene
+    // Clean up current scene first
     if (Manager.currentScene) {
       Manager.currentScene.IDestroy();
 
@@ -130,10 +180,14 @@ export class Manager {
     // Handle loading scene
     if (loadingScene) {
       Manager.currentScene = loadingScene;
-      // Loading scene goes to stage (no viewport interactions needed)
+      // Loading scene goes to stage (UI elements stay on stage)
       if (Manager._app) {
         Manager._app.stage.addChild(loadingScene);
       }
+      
+      // Reset viewport for loading scene using centralized method
+      Manager.resetViewport();
+      
       return;
     }
 
@@ -158,6 +212,8 @@ export class Manager {
         }
         break;
     }
+    
+    console.log("Scene change complete - new scene will handle its own viewport setup");
   }
 
   // Helper method to center viewport
