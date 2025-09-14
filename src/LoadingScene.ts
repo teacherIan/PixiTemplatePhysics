@@ -22,7 +22,6 @@ export default class LoadingScene extends Container implements IScene {
   private loaderBarWidth: number;
   private loaderBarBorderLineStyleWidth: number;
   private snakeWorld: SnakeWorld;
-  private tickerFunction: () => void;
   //game world
 
   constructor() {
@@ -86,11 +85,20 @@ export default class LoadingScene extends Container implements IScene {
       this.setLayout();
     });
     this.resize();
-    this.addTicker();
   }
 
   update(t: Ticker): void {
-    // Implementation not needed for this scene
+    if (this.loaded) this.text.text = 'PIXI.JS\nRAPIER.JS';
+
+    this.timer += 1;
+    if (this.timer == 10) {
+      this.dots += 1;
+      this.timer = 0;
+
+      this.snakeWorld.update();
+    }
+    let dotsString: string = '.'.repeat(this.dots % 5);
+    this.text.text = 'LOADING' + dotsString;
   }
 
   private resize(): void {
@@ -130,31 +138,8 @@ export default class LoadingScene extends Container implements IScene {
     }
   }
 
-  private addTicker() {
-    this.tickerFunction = () => {
-      if (this.loaded) this.text.text = 'PIXI.JS\nRAPIER.JS';
-
-      this.timer += 1;
-      if (this.timer == 10) {
-        this.dots += 1;
-        this.timer = 0;
-
-        this.snakeWorld.update();
-      }
-      let dotsString: string = '.'.repeat(this.dots % 5);
-      this.text.text = 'LOADING' + dotsString;
-    };
-    
-    Ticker.shared.add(this.tickerFunction);
-  }
-
   IDestroy(): void {
     console.log("=== DESTROYING LOADING SCENE ===");
-    
-    // Remove the ticker to stop snake updates
-    if (this.tickerFunction) {
-      Ticker.shared.remove(this.tickerFunction);
-    }
     
     // Clean up snake world from viewport
     const viewport = Manager.getViewport();
@@ -165,6 +150,6 @@ export default class LoadingScene extends Container implements IScene {
       this.snakeWorld.destroy();
     }
     
-    // Note: follow plugin is already removed in Manager.changeScene()
+    // Note: Scene updates automatically stop when Manager changes scenes
   }
 }
