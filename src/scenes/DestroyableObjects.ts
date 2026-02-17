@@ -71,7 +71,7 @@ export class DestroyableObjects extends Container implements IScene {
     return this.addChild(t);
   }
 
-  private circlePhysicsSpriteFactory(x: number, y: number) {
+  private circlePhysicsSpriteFactory(x: number, y: number, velX: number, velY: number, angularVel: number = 0) {
     const sprite = new Sprite(Texture.from('green_body_circle'));
     sprite.anchor.set(0.5, 0.5);
     sprite.position.set(x, y);
@@ -79,7 +79,7 @@ export class DestroyableObjects extends Container implements IScene {
     sprite.height = sprite.width;
     this.dynamicSprites.push(sprite);
     this.dynamicColliders.push(
-      Manager.physicsWorld.createPhysicsSphere(x, y, sprite.width)
+      Manager.physicsWorld.createPhysicsSphereWithVelocity(x, y, sprite.width, velX, velY, angularVel)
     );
     this.addChild(sprite);
   }
@@ -104,7 +104,7 @@ export class DestroyableObjects extends Container implements IScene {
     this.addChild(sprite);
   }
 
-  private cubicPhysicsSpriteFactory(x: number, y: number) {
+  private cubicPhysicsSpriteFactory(x: number, y: number, velX: number, velY: number, angularVel: number = 0) {
     const sprite = new Sprite(Texture.from('red_body_square'));
     sprite.anchor.set(0.5, 0.5);
     sprite.position.set(x, y);
@@ -112,7 +112,7 @@ export class DestroyableObjects extends Container implements IScene {
     sprite.height = this.objectSize * Math.random() + 5;
     this.dynamicSprites.push(sprite);
     this.dynamicColliders.push(
-      Manager.physicsWorld.createPhysicsRect(x, y, sprite.width, sprite.height)
+      Manager.physicsWorld.createPhysicsRectWithVelocity(x, y, sprite.width, sprite.height, velX, velY, angularVel)
     );
     this.addChild(sprite);
   }
@@ -123,19 +123,31 @@ export class DestroyableObjects extends Container implements IScene {
 
   private addObject() {
     let objectsAdded = 2;
-    (this.counterText.text = this.counter),
-      this.emitBallObject
-        ? this.circlePhysicsSpriteFactory(
-            Math.random() * window.innerWidth,
-            -Math.random() * 500
-          )
-        : objectsAdded--;
-    this.emitCubicObject
-      ? this.cubicPhysicsSpriteFactory(
-          Math.random() * window.innerWidth,
-          -Math.random() * 500
-        )
-      : objectsAdded--;
+    this.counterText.text = this.counter.toString();
+
+    // Spawn from TOP with angled velocity and random spin
+    if (this.emitBallObject) {
+      const x = Math.random() * window.innerWidth;
+      const y = -50 - Math.random() * 150; // Above screen
+      const velX = (Math.random() - 0.5) * 400; // -200 to +200 (angled)
+      const velY = 100 + Math.random() * 200; // Downward
+      const spin = (Math.random() - 0.5) * 20; // Random spin for interesting bounces
+      this.circlePhysicsSpriteFactory(x, y, velX, velY, spin);
+    } else {
+      objectsAdded--;
+    }
+
+    if (this.emitCubicObject) {
+      const x = Math.random() * window.innerWidth;
+      const y = -50 - Math.random() * 150; // Above screen
+      const velX = (Math.random() - 0.5) * 400; // -200 to +200 (angled)
+      const velY = 100 + Math.random() * 200; // Downward
+      const spin = (Math.random() - 0.5) * 20; // Random spin for interesting bounces
+      this.cubicPhysicsSpriteFactory(x, y, velX, velY, spin);
+    } else {
+      objectsAdded--;
+    }
+
     this.counter += objectsAdded;
   }
   private setGUI() {
@@ -198,9 +210,8 @@ export class DestroyableObjects extends Container implements IScene {
         dynamicCollider.rotation();
     });
 
-    // Physics stepping is handled by Manager.update(), don't duplicate it here
-    // Manager.getPhysicsWorld.stepWorld(t.deltaTime * 0.2);
-    Manager.app.render();
+    // Physics stepping is handled by Manager.update()
+    // Rendering is handled automatically by PixiJS ticker
   }
 
   IDestroy(): void {

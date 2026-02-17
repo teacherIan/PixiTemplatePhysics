@@ -10,6 +10,7 @@ export default class Sand extends Container implements IScene {
   private colliders: Array<Collider>;
   private objectSize: number;
   private amount: number;
+  private sandTexture: Texture; // Cached texture for performance
 
   constructor() {
     super();
@@ -17,6 +18,10 @@ export default class Sand extends Container implements IScene {
     this.objectSize = 35;
     this.sprites = [];
     this.colliders = [];
+
+    // Cache texture ONCE instead of 4000 lookups
+    this.sandTexture = Texture.from('sand');
+
     this.setCounterText();
 
     for (let i = 0; i < this.amount; i++) {
@@ -43,7 +48,7 @@ export default class Sand extends Container implements IScene {
   }
 
   private circlePhysicsSpriteFactory(x: number, y: number) {
-    const sprite = new Sprite(Texture.from('sand'));
+    const sprite = new Sprite(this.sandTexture); // Use cached texture
     sprite.anchor.set(0.5, 0.5);
     sprite.position.set(x, y);
     sprite.width = this.objectSize;

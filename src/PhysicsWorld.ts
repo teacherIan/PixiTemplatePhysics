@@ -133,7 +133,15 @@ export class PhysicsWorld {
   }
 
   private setDynamicProperties(collider: RAPIER.Collider): void {
-    collider.setRestitution(0.01);
+    collider.setRestitution(0.5); // Bouncy!
+    collider.setFriction(0.3);
+
+    // Add damping to the parent rigid body for stability
+    const rigidBody = collider.parent();
+    if (rigidBody) {
+      rigidBody.setLinearDamping(0.1);
+      rigidBody.setAngularDamping(0.1);
+    }
   }
 
   private setStaticProperties(collider: RAPIER.Collider): void {
@@ -190,7 +198,59 @@ export class PhysicsWorld {
   public stepWorld(deltaTime: number): void {
     if (!this.physicsWorld || deltaTime <= 0) return;
 
-    this.physicsWorld.step();
+    // Accumulate time and step physics at fixed intervals
+    this.accumulator += deltaTime;
+
+    // Step physics multiple times if needed to catch up
+    while (this.accumulator >= this.fixedTimeStep) {
+      this.physicsWorld.step();
+      this.accumulator -= this.fixedTimeStep;
+    }
+  }
+
+  // Create sphere with initial velocity (for angled projectiles)
+  public createPhysicsSphereWithVelocity(
+    x: number,
+    y: number,
+    size: number,
+    velX: number,
+    velY: number,
+    angularVel: number = 0
+  ): RAPIER.Collider {
+    const rigidBodyDesc = RAPIER.RigidBodyDesc.dynamic()
+      .setTranslation(x, y)
+      .setLinvel(velX, velY)
+      .setAngvel(angularVel);
+    const rigidBody = this.physicsWorld.createRigidBody(rigidBodyDesc);
+
+    const colliderDesc = RAPIER.ColliderDesc.ball(size / 2);
+    const collider = this.physicsWorld.createCollider(colliderDesc, rigidBody);
+
+    this.setDynamicProperties(collider);
+    return collider;
+  }
+
+  // Create rectangle with initial velocity (for angled projectiles)
+  public createPhysicsRectWithVelocity(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    velX: number,
+    velY: number,
+    angularVel: number = 0
+  ): RAPIER.Collider {
+    const rigidBodyDesc = RAPIER.RigidBodyDesc.dynamic()
+      .setTranslation(x, y)
+      .setLinvel(velX, velY)
+      .setAngvel(angularVel);
+    const rigidBody = this.physicsWorld.createRigidBody(rigidBodyDesc);
+
+    const colliderDesc = RAPIER.ColliderDesc.cuboid(width / 2, height / 2);
+    const collider = this.physicsWorld.createCollider(colliderDesc, rigidBody);
+
+    this.setDynamicProperties(collider);
+    return collider;
   }
 
   // Expose the underlying world for advanced usage

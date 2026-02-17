@@ -87,9 +87,13 @@ export default class SnakeWorld extends Container {
   }
 
   private setupCamera(): void {
+    this.centerCameraOnSnake();
+  }
+
+  public centerCameraOnSnake(): void {
     const viewport = Manager.getViewport();
     if (viewport && this.snake.length > 0) {
-      // Move viewport to snake head initially
+      // Move viewport to snake head immediately
       const snakeHead = this.snake[0];
       const worldX = snakeHead.Location.x * this.snakeGridSize;
       const worldY = snakeHead.Location.y * this.snakeGridSize;

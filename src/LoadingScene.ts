@@ -32,6 +32,8 @@ export default class LoadingScene extends Container implements IScene {
     const viewport = Manager.getViewport();
     if (viewport) {
       viewport.addChild(this.snakeWorld);
+      // Center viewport on snake AFTER adding to viewport
+      this.snakeWorld.centerCameraOnSnake();
     }
 
     //UI Elements
@@ -88,17 +90,20 @@ export default class LoadingScene extends Container implements IScene {
   }
 
   update(t: Ticker): void {
-    if (this.loaded) this.text.text = 'PIXI.JS\nRAPIER.JS';
-
     this.timer += 1;
     if (this.timer == 10) {
       this.dots += 1;
       this.timer = 0;
-
       this.snakeWorld.update();
     }
-    let dotsString: string = '.'.repeat(this.dots % 5);
-    this.text.text = 'LOADING' + dotsString;
+
+    // Only update text based on loaded state
+    if (this.loaded) {
+      this.text.text = 'PIXI.JS\nRAPIER.JS';
+    } else {
+      let dotsString: string = '.'.repeat(this.dots % 5);
+      this.text.text = 'LOADING' + dotsString;
+    }
   }
 
   private resize(): void {

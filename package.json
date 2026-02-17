@@ -9,10 +9,15 @@
   },
   "scripts": {
     "dev": "vite",
+    "dev:react": "vite --config vite.react.config.ts",
     "build": "tsc && vite build",
+    "build:react": "tsc && vite build --config vite.react.config.ts",
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.4.1",
     "typescript": "^5.9.2",
     "vite": "^7.1.4"
   },
@@ -21,7 +26,9 @@
     "gsap": "^3.13",
     "lil-gui": "^0.20.0",
     "pixi-viewport": "^6.0.3",
-    "pixi.js": "^8.13.1"
+    "pixi.js": "^8.13.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "resolutions": {
     "rollup": "npm:@rollup/wasm-node"

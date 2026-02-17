@@ -15,7 +15,7 @@ export class Manager {
   private static _app: Application;
   private static currentScene: IScene;
   private static sceneIterator: number = 0;
-  private static amtScenes: number = 2;
+  private static amtScenes: number = 4;
   public static started = false;
   private static _viewport: Viewport;
 
@@ -143,8 +143,8 @@ export class Manager {
     if (Manager.currentScene) {
       Manager.currentScene.update(t);
       if (Manager._physicsWorld) {
-        // ← Check the PRIVATE property!
-        Manager._physicsWorld.stepWorld(t.deltaMS / 10000);
+        // Step physics with deltaTime in seconds
+        Manager._physicsWorld.stepWorld(t.deltaMS / 1000);
       }
     }
   }
@@ -211,9 +211,30 @@ export class Manager {
           Manager._viewport.addChild(Manager.currentScene);
         }
         break;
+
+      case 2:
+        Manager.currentScene = new Basic();
+        if (Manager._viewport) {
+          Manager._viewport.addChild(Manager.currentScene);
+        }
+        break;
+
+      case 3:
+        Manager.currentScene = new DestroyableObjects(20);
+        if (Manager._viewport) {
+          Manager._viewport.addChild(Manager.currentScene);
+        }
+        break;
     }
-    
-    console.log("Scene change complete - new scene will handle its own viewport setup");
+
+    // Reset viewport to screen center for all game scenes
+    if (Manager._viewport) {
+      Manager._viewport.plugins.remove('follow');
+      Manager._viewport.moveCenter(window.innerWidth / 2, window.innerHeight / 2);
+      Manager._viewport.scale.set(1);
+    }
+
+    console.log("Scene change complete");
   }
 
   // Helper method to center viewport

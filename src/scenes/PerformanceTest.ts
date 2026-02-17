@@ -26,6 +26,10 @@ export class PerformanceTest extends Container implements IScene {
   private emitterLocation;
   private firstObjectCreated: boolean = false;
 
+  // Cached textures for performance
+  private circleTexture: Texture;
+  private squareTexture: Texture;
+
   constructor(objectSize: number) {
     super();
     this.isRenderGroup = true;
@@ -38,6 +42,11 @@ export class PerformanceTest extends Container implements IScene {
     this.intervalTimeout = 50;
     this.counter = 0;
     this.frameCounter = 0;
+
+    // Cache textures once for performance
+    this.circleTexture = Texture.from('green_body_circle');
+    this.squareTexture = Texture.from('red_body_square');
+
     this.textStyle = this.setTextStyle();
     this.counterText = this.setCounterText();
     this.setGUI();
@@ -62,8 +71,8 @@ export class PerformanceTest extends Container implements IScene {
     return this.addChild(t);
   }
 
-  private circlePhysicsSpriteFactory(x: number, y: number) {
-    const sprite = new Sprite(Texture.from('green_body_circle'));
+  private circlePhysicsSpriteFactory(x: number, y: number, velX: number, velY: number, angularVel: number = 0) {
+    const sprite = new Sprite(this.circleTexture);
     sprite.anchor.set(0.5, 0.5);
     sprite.position.set(x, y);
     sprite.width = this.objectSize * Math.random() + 15;
@@ -71,15 +80,15 @@ export class PerformanceTest extends Container implements IScene {
     this.addChild(sprite);
     this.physicsObjects.push({
       render: sprite,
-      physics: this.physicsWorld.createPhysicsSphere(x, y, sprite.width),
+      physics: this.physicsWorld.createPhysicsSphereWithVelocity(x, y, sprite.width, velX, velY, angularVel),
     });
-    
+
     // Set up viewport following for the first object created
     this.setupViewportFollowingIfFirst(sprite);
   }
 
-  private cubicPhysicsSpriteFactory(x: number, y: number) {
-    const sprite = new Sprite(Texture.from('red_body_square'));
+  private cubicPhysicsSpriteFactory(x: number, y: number, velX: number, velY: number, angularVel: number = 0) {
+    const sprite = new Sprite(this.squareTexture);
     sprite.anchor.set(0.5, 0.5);
     sprite.position.set(x, y);
     sprite.width = this.objectSize * Math.random() + 15;
@@ -87,14 +96,17 @@ export class PerformanceTest extends Container implements IScene {
     this.addChild(sprite);
     this.physicsObjects.push({
       render: sprite,
-      physics: this.physicsWorld.createPhysicsRect(
+      physics: this.physicsWorld.createPhysicsRectWithVelocity(
         x,
         y,
         sprite.width,
-        sprite.height
+        sprite.height,
+        velX,
+        velY,
+        angularVel
       ),
     });
-    
+
     // Set up viewport following for the first object created
     this.setupViewportFollowingIfFirst(sprite);
   }
@@ -134,18 +146,31 @@ export class PerformanceTest extends Container implements IScene {
       
       let objectsAdded = 0;
       
+      // Random horizontal velocity for angled entry
+      const velX = (Math.random() - 0.5) * 300; // -150 to +150
+      const velY = 50 + Math.random() * 100; // 50 to 150 (downward)
+
+      // Random spin for more interesting bounces
+      const spin = (Math.random() - 0.5) * 15;
+
       if (this.emitBallObject) {
         this.circlePhysicsSpriteFactory(
           Math.random() * 200 + this.emitterLocation,
-          -Math.random() * 500
+          -Math.random() * 500,
+          velX,
+          velY,
+          spin
         );
         objectsAdded++;
       }
-      
+
       if (this.emitCubicObject) {
         this.cubicPhysicsSpriteFactory(
           Math.random() * 200 + this.emitterLocation,
-          -Math.random() * 500
+          -Math.random() * 500,
+          -velX, // Opposite direction for variety
+          velY,
+          -spin // Opposite spin for variety
         );
         objectsAdded++;
       }

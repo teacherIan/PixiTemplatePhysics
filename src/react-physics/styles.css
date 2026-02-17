@@ -1,0 +1,202 @@
+/* Minimal reset - your project's shadcn CSS will handle component styling */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #0a0a0a;
+  color: #fafafa;
+  overflow: hidden;
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+}
+
+/*
+ * Suggestion Board Styles
+ * These are fallback styles for the demo.
+ * Your existing shadcn CSS classes will override these when integrated.
+ */
+
+/* Static physics form in center */
+.suggestion-form-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 100;
+  pointer-events: auto;
+}
+
+.suggestion-form {
+  background: #1c1c1c;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 24px;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-title {
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  color: #fafafa;
+}
+
+.suggestion-input {
+  background: #0a0a0a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #fafafa;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.suggestion-input:focus {
+  border-color: #666;
+}
+
+.suggestion-input::placeholder {
+  color: #666;
+}
+
+.submit-button {
+  background: #fafafa;
+  color: #0a0a0a;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.submit-button:hover {
+  opacity: 0.9;
+}
+
+/* Suggestion Cards */
+.suggestion-card {
+  background: #1c1c1c;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 16px;
+  min-width: 180px;
+  max-width: 250px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.suggestion-text {
+  font-size: 14px;
+  line-height: 1.4;
+  color: #fafafa;
+  word-wrap: break-word;
+}
+
+.vote-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: #888;
+  cursor: pointer;
+  transition: all 0.2s;
+  align-self: flex-start;
+}
+
+.vote-button:hover {
+  border-color: #4ade80;
+  color: #4ade80;
+}
+
+.vote-count {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Legacy styles for other shadcn components (kept for compatibility) */
+.card {
+  background: #1c1c1c;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 16px;
+  min-width: 180px;
+}
+
+.card-header {
+  margin-bottom: 12px;
+}
+
+.card-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.card-description {
+  font-size: 12px;
+  color: #888;
+}
+
+.card-content {
+  font-size: 14px;
+}
+
+.button {
+  background: #fafafa;
+  color: #0a0a0a;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.button-outline {
+  background: transparent;
+  color: #fafafa;
+  border: 1px solid #333;
+}
+
+.badge {
+  display: inline-block;
+  background: #333;
+  color: #fafafa;
+  border-radius: 9999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-fallback {
+  font-size: 16px;
+  font-weight: 500;
+}
